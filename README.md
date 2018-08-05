@@ -2,7 +2,7 @@
 
 ## :heartbeat: Demo
 
-* [NEM Testnet Faucet - You can get Testnet XEM for development / testing.](http://test-nem-faucet.44uk.net)
+* [NEM2 Faucet](http://test-nem2-faucet.44uk.net/)
 
 
 ## :fire: Setup
