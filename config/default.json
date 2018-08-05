@@ -1,0 +1,8 @@
+{
+  "minXem": 10000000,
+  "maxXem": 30000000,
+  "optXem": 20000000,
+  "enoughBalance": 100000000,
+  "maxUnconfirmed": 1,
+  "waitHeight": 10
+}

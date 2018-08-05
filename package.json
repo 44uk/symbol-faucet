@@ -1,0 +1,43 @@
+{
+  "name": "nem2-faucet",
+  "description": "NEM2 faucet web application",
+  "version": "0.0.1",
+  "author": "44uk",
+  "license": "MIT",
+  "private": true,
+  "homepage": "https://github.com/44uk/nem2-faucet",
+  "engines": {
+    "node": "8.11.3"
+  },
+  "scripts": {
+    "start": "node ./bin/www",
+    "dev": "node-dev ./bin/www"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/44uk/nem2-faucet.git"
+  },
+  "dependencies": {
+    "@outboxcraft/beauter": "^0.3.0",
+    "body-parser": "~1.18.3",
+    "config": "^2.0.1",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~3.1.0",
+    "dotenv": "^6.0.0",
+    "express": "~4.16.3",
+    "express-session": "^1.15.6",
+    "lodash": "^4.17.10",
+    "morgan": "~1.9.0",
+    "nem2-asset-identifier": "^0.3.4",
+    "nem2-sdk": "^0.10.1",
+    "pug": "~2.0.3",
+    "request": "^2.87.0",
+    "rxjs": "^6.2.2",
+    "serve-favicon": "~2.5.0",
+    "stylus": "^0.54.5"
+  },
+  "devDependencies": {
+    "node-dev": "^3.1.3"
+  }
+}

@@ -1,0 +1,58 @@
+extends layout
+
+block content
+  .container
+    if drained
+      include _drained
+
+    if error != ''
+      include _error
+
+    if txHash != ''
+      include _txHash
+
+    form(action="/claims" method="post")
+      .row
+        .col.m8
+          div
+            label Address
+            input._width100(type="text" name="address" value=address placeholder="Address start with a capital S" pattern="^S.+" title="MIJIN_TEST address start with a capital S" required autofocus disabled=drained)
+          div
+            label Message
+            input._width100(type="text" name="message" value=message placeholder="(Optional)" disabled=drained)
+          div
+            label Amount
+            input._width100(type="number" name="amount" value=amount placeholder=`(Up to ${xemOpt}. Optional, if you want fixed amount)` min="0" max=xemOpt step="0.05" disabled=drained)
+
+        .col.m4
+          if recaptcha_secret
+            div
+              include _recaptcha
+
+          div
+            label &nbsp;
+            button.button._primary._width100(type="submit" disabled=drained) Claim!
+
+          -// TODO: Not yet supported Encrypt Message.
+          -// div
+          -//   label
+          -//     input(type="checkbox" name="encrypt" value="1" checked=encrypt disabled=drained)
+          -//     span.-label-body  Encrypt message
+
+    .row
+      .col.m8
+        label Sendback Address
+        input._width100(type="text" readonly value=faucetAddress)
+      .col.m4
+        label Faucet Balance
+        input._width100._alignRight(type="text" readonly value=`${faucetAmount}`)
+
+    .row
+      .col.m12
+        h3 Readme
+        ul
+          li This is "MIJIN_TEST XEM faucet" on "http://catapult-test.44uk.net:3000".
+          li You can get XEM randomly from #{xemMin} to #{xemMax}.
+          li This is an experimental server, the spec can be change without notice.
+          li Please send back XEM when you need no longer need.
+          li Good luck! NEM development!
