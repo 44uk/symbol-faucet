@@ -12,7 +12,7 @@
 # * COOKIE_SECRET
 # * PORT
 # * NETWORK
-# * API_ADDR
+# * API_HOST
 # * API_PORT
 # * PRIVATE_KEY
 # * MAX_XEM
