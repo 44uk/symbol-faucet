@@ -35,7 +35,7 @@ router.post('/', async (req, res, next) => {
   const message = req.body.message
   const encrypt = req.body.encrypt
   const mosaic  = req.body.mosaic
-  const amount  = sanitizeAmount(req.body.amount)
+  const amount  = req.body.amount
   const reCaptcha = req.body['g-recaptcha-response']
   const reCaptchaUrl = reCaptchaValidationUrl(reCaptcha)
   const params = _.omitBy({
@@ -118,7 +118,7 @@ router.post('/', async (req, res, next) => {
 
         // determine amount to pay out
         const faucetBalance = xemFaucetOwned.amount.compact() - 1000000
-        const txAmount = amount || Math.min(faucetBalance, randomInRange(MIN_XEM, MAX_XEM))
+        const txAmount = sanitizeAmount(amount) || Math.min(faucetBalance, randomInRange(MIN_XEM, MAX_XEM))
         console.debug(`faucet balance => %d`, faucetBalance)
         console.debug(`pay out amount => %d`, txAmount)
 
