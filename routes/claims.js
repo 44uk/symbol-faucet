@@ -69,7 +69,16 @@ router.post('/', async (req, res, next) => {
       mosaicService.mosaicsAmountViewFromAddress(sanitizedAddress)
         .pipe(
           op.mergeMap(_ => _),
-          op.filter(mo => mo.fullName() === 'nem:xem')
+          op.filter(mo => mo.fullName() === 'nem:xem'),
+          op.defaultIfEmpty(),
+          op.catchError(err => {
+            const response = JSON.parse(err.response.text);
+            if (response.code == 'ResourceNotFound') {
+              return rx.of('ResourceNotFound')
+            } else {
+              return rx.throwError('Something wrong with MosaicService response')
+            }
+          }),
         ),
       accountHttp.outgoingTransactions(faucetAccount)
         .pipe(
