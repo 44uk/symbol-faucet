@@ -57,7 +57,10 @@ router.get('/', function(req, res, next) {
           amount: amount,
           faucetAddress: data.account.address.pretty(),
           faucetAmount: data.mosaics[0].relativeAmount(),
-          recaptcha_secret: process.env.RECAPTCHA_CLIENT_SECRET
+          recaptcha_secret: process.env.RECAPTCHA_CLIENT_SECRET,
+          network: process.env.NETWORK,
+          apiHost: process.env.API_HOST,
+          apiPort: process.env.API_PORT
         }
       ),
       err => next,
