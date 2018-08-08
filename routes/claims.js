@@ -18,6 +18,7 @@ const ENOUGH_BALANCE = parseInt(process.env.ENOUGH_BALANCE || config.enoughBalan
 const MAX_UNCONFIRMED = parseInt(process.env.MAX_UNCONFIRMED || config.maxUnconfirmed)
 const WAIT_HEIGHT = parseInt(process.env.WAIT_HEIGHT || config.waitHeight)
 const API_URL = `${process.env.API_HOST}:${process.env.API_PORT}`
+const RESOURCE_NOT_FOUND = 'ResourceNotFound';
 
 const faucetAccount = nem.Account.createFromPrivateKey(
   process.env.PRIVATE_KEY,
@@ -73,8 +74,8 @@ router.post('/', async (req, res, next) => {
           op.defaultIfEmpty(),
           op.catchError(err => {
             const response = JSON.parse(err.response.text);
-            if (response.code == 'ResourceNotFound') {
-              return rx.of('ResourceNotFound')
+            if (response.code == RESOURCE_NOT_FOUND) {
+              return rx.of(null)
             } else {
               return rx.throwError('Something wrong with MosaicService response')
             }
@@ -118,7 +119,7 @@ router.post('/', async (req, res, next) => {
           return
         }
 
-        if(false && xemClaimerOwned.amount.compact() >= ENOUGH_BALANCE) {
+        if(xemClaimerOwned !== null && xemClaimerOwned.amount.compact() >= ENOUGH_BALANCE) {
           console.debug(`claimer balance => %d`, xemClaimerOwned.amount.compact())
           req.flash('error', `Your account already have enougth balance => (%s)`, xemClaimerOwned.relativeAmount())
           res.redirect(`/?${query}`)
