@@ -7,7 +7,7 @@
   "private": true,
   "homepage": "https://github.com/44uk/nem2-faucet",
   "engines": {
-    "node": "8.11.3"
+    "node": ">=8.9.0"
   },
   "scripts": {
     "start": "node ./bin/www",
