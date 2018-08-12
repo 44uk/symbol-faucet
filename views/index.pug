@@ -16,7 +16,7 @@ block content
         .col.m8
           div
             label Address
-            input._width100(type="text" name="address" value=address placeholder="Address start with a capital S" pattern="^S.+" title=`${network} address start with a capital S` required autofocus disabled=drained)
+            input._width100(type="text" name="address" value=address placeholder=`Address start with a capital ${faucetAddress.charAt(0)}` pattern=`^${faucetAddress.charAt(0)}.+` title=`${network} address start with a capital S` required autofocus disabled=drained)
           div
             label Message
             input._width100(type="text" name="message" value=message placeholder="(Optional)" disabled=drained)
