@@ -3,6 +3,13 @@ extends layout
 block content
   .container
     .row
+      .col.m12
+        .alert._danger
+          if errorBody
+            span= `${errorBody.code}: ${errorBody.message}`
+          else
+            span= message
+    .row
       .col
         div
           h3 Something went wrong.

@@ -2,7 +2,6 @@ const config = require('config')
 const express = require('express')
 const router = express.Router()
 const nem = require('nem2-sdk')
-const rx = require('rxjs')
 const op = require('rxjs/operators')
 
 const MAX_XEM = parseInt(process.env.MAX_XEM || config.xem.max)
@@ -41,8 +40,8 @@ router.get('/', function(req, res, next) {
           )
       })
     )
-    .subscribe(
-      data => {
+    .subscribe({
+      next(data) {
         res.render('index', {
           drained: drained,
           txHash: req.flash('txHash'),
@@ -61,10 +60,10 @@ router.get('/', function(req, res, next) {
           network: process.env.NETWORK,
           apiHost: process.env.API_HOST,
           apiPort: process.env.API_PORT
-        }
-      ),
-      err => next,
-      () => {}
+        })
+      },
+      error(err) { next(err) },
+      complete() {}
     })
 })
 
