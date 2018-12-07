@@ -29,7 +29,6 @@
     "express-session": "^1.15.6",
     "lodash": "^4.17.10",
     "morgan": "~1.9.0",
-    "nem2-asset-identifier": "^0.3.4",
     "nem2-sdk": "^0.10.1",
     "pug": "~2.0.3",
     "request": "^2.88.0",
