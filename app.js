@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const stylus = require('stylus');
 
 const app = express();
-require('dotenv').config({ path: '.env.' + app.get('env') });
+require('dotenv').config({ path: '.env' });
 
 const index = require('./routes/index');
 const claims = require('./routes/claims');
@@ -19,15 +19,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session({
-  secret: process.env.COOKIE_SECRET,
-  cookie: { maxAge: 60000 }
-}));
+app.use(
+  session({
+    secret: process.env.COOKIE_SECRET,
+    cookie: { maxAge: 60000 }
+  })
+);
 app.use(flash());
 app.use(stylus.middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -45,7 +47,7 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  console.error(err)
+  console.error(err);
 
   // set locals, only providing error in development
   res.locals.message = err.message;

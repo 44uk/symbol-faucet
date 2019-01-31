@@ -1,8 +1,7 @@
 {
-  "minXem": 10000000,
-  "maxXem": 30000000,
-  "optXem": 20000000,
-  "enoughBalance": 100000000,
-  "maxUnconfirmed": 1,
-  "waitHeight": 10
+  "xemMin": 100,
+  "xemMax": 300,
+  "enoughBalance": 10000,
+  "maxUnconfirmed": 3,
+  "waitHeight": 3
 }
