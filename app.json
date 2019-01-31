@@ -1,0 +1,58 @@
+{
+  "name": "nem2-faucet",
+  "description": "Faucet application for nem2",
+  "keywords": ["nem", "catapult", "blockchain"],
+  "website": "https://github.com/44uk/nem2-faucet/",
+  "repository": "https://github.com/44uk/nem2-faucet/tree/master",
+  "env": {
+    "COOKIE_SECRET": {
+      "generator": "secret"
+    },
+    "PORT": {
+      "value": "80"
+    },
+    "NETWORK": {
+      "value": "MIJIN_TEST"
+    },
+    "API_HOST": {
+      "value": "http://localhost",
+      "description": "API URL to connect."
+    },
+    "API_PORT": {
+      "value": "3000",
+      "description": "API port to connect."
+    },
+    "PRIVATE_KEY": {
+      "value": "__SET_YOUR_KEY__",
+      "description": "PrivateKey of Faucet Account that you want to assign."
+    },
+    "XEM_MIN": {
+      "value": "100"
+    },
+    "XEM_MAX": {
+      "value": "500"
+    },
+    "XEM_OPT": {
+      "value": "300"
+    },
+    "ENOUGH_BALANCE": {
+      "value": "200"
+    },
+    "MAX_UNCONFIRMED": {
+      "value": "3"
+    },
+    "WAIT_HEIGHT": {
+      "value": "3"
+    },
+    "RECAPTCHA_CLIENT_SECRET": {
+      "required": false,
+      "description": "(Optional) disabled ReCaptcha if it is blank."
+    },
+    "RECAPTCHA_SERVER_SECRET": {
+      "required": false,
+      "description": "(Optional) disabled ReCaptcha if it is blank."
+    }
+  },
+  "addons": [],
+  "buildpacks": [{ "url": "heroku/nodejs" }]
+}
