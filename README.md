@@ -22,15 +22,15 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # * API_HOST
 # * API_PORT
 # * PRIVATE_KEY
-# * MAX_XEM
-# * MIN_XEM
-# * OPT_XEM
+# * XEM_MAX
+# * XEM_MIN
+# * XEM_OPT
 # * ENOUGH_BALANCE
 # * MAX_UNCONFIRMED
 # * WAIT_HEIGHT
 # * RECAPTCHA_CLIENT_SECRET
 # * RECAPTCHA_SERVER_SECRET
-# or edit .env.development
+# or edit .env
 
 # install packages
 $ npm install

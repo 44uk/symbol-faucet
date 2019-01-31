@@ -16,16 +16,16 @@ block content
         .col.m8
           div
             label Address
-            input._width100(type="text" name="address" value=address placeholder=`Address start with a capital ${faucetAddress.charAt(0)}` pattern=`^${faucetAddress.charAt(0)}.+` title=`${network} address start with a capital S` required autofocus disabled=drained)
+            input._width100(type="text" name="address" value=address placeholder=`Address start with a capital ${faucetAddress.charAt(0)}` pattern=`^${faucetAddress.charAt(0)}.+` title=`${network} address start with a capital ${faucetAddress.charAt(0)}` required autofocus disabled=drained)
           div
             label Message
-            input._width100(type="text" name="message" value=message placeholder="(Optional)" disabled=drained)
+            input._width100(type="text" name="message" value=message placeholder="(Optional)" maxLength="1023" disabled=drained)
           div
             label Amount
             input._width100(type="number" name="amount" value=amount placeholder=`(Up to ${xemOpt}. Optional, if you want fixed amount)` min="0" max=xemOpt step="0.05" disabled=drained)
 
         .col.m4
-          if recaptcha_secret
+          if recaptchaSecret
             div
               include _recaptcha
 
@@ -45,7 +45,7 @@ block content
         input._width100(type="text" readonly value=faucetAddress)
       .col.m4
         label Faucet Balance
-        input._width100._alignRight(type="text" readonly value=`${faucetAmount}`)
+        input._width100._alignRight(type="text" readonly value=`${faucetBalance}`)
 
     .row
       .col.m12

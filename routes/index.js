@@ -1,70 +1,81 @@
-const config = require('config')
-const express = require('express')
-const router = express.Router()
-const nem = require('nem2-sdk')
-const op = require('rxjs/operators')
+const config = require('config');
+const express = require('express');
+const nem = require('nem2-sdk');
+const op = require('rxjs/operators');
+const router = express.Router();
 
-const MAX_XEM = parseInt(process.env.MAX_XEM || config.xem.max)
-const MIN_XEM = parseInt(process.env.MIN_XEM || config.xem.min)
-const OPT_XEM = parseInt(process.env.OPT_XEM || ~~((MAX_XEM + MIN_XEM) / 2))
+const XEM_MAX = parseInt(process.env.XEM_MAX || config.xemMax);
+const XEM_MIN = parseInt(process.env.XEM_MIN || config.xemMin);
+const XEM_OPT = parseInt(process.env.XEM_OPT || ~~((XEM_MAX + XEM_MIN) / 2));
+const API_URL = `${process.env.API_HOST}:${process.env.API_PORT}`;
 
 const faucetAccount = nem.Account.createFromPrivateKey(
   process.env.PRIVATE_KEY,
   nem.NetworkType[process.env.NETWORK]
-)
-const API_URL = `${process.env.API_HOST}:${process.env.API_PORT}`
-const accountHttp = new nem.AccountHttp(API_URL)
+);
+const accountHttp = new nem.AccountHttp(API_URL);
 const mosaicService = new nem.MosaicService(
   accountHttp,
   new nem.MosaicHttp(API_URL),
   new nem.NamespaceHttp(API_URL)
-)
+);
 
 router.get('/', function(req, res, next) {
-  const address = req.query.address
-  const message = req.query.message
-  const encrypt = req.query.encrypt
-  const mosaic  = req.query.mosaic
-  const amount  = req.query.amount
-  const drained = false
+  const address = req.query.address;
+  const message = req.query.message;
+  const encrypt = req.query.encrypt;
+  const mosaic = req.query.mosaic;
+  const amount = req.query.amount;
 
-  accountHttp.getAccountInfo(faucetAccount.address)
+  accountHttp
+    .getAccountInfo(faucetAccount.address)
     .pipe(
       op.mergeMap(account => {
-        return mosaicService.mosaicsAmountViewFromAddress(faucetAccount.address)
+        return mosaicService
+          .mosaicsAmountViewFromAddress(faucetAccount.address)
           .pipe(
             op.mergeMap(_ => _),
-            op.filter(mosaic => mosaic.fullName() === 'nem:xem'),
-            op.toArray(),
-            op.map(mosaics => { return {mosaics, account} })
-          )
+            op.find(mosaic => mosaic.fullName() === 'nem:xem'),
+            op.map(xem => ({ xem, account }))
+          );
+      }),
+      op.catchError(err => {
+        const response = JSON.parse(err.response.text);
+        if (response.code === 'ResourceNotFound') {
+          throw new Error(
+            `Resource Not Found => ${faucetAccount.address.pretty()}`
+          );
+        } else {
+          throw new Error('Something wrong with MosaicService response');
+        }
       })
     )
-    .subscribe({
-      next(data) {
+    .subscribe(
+      data => {
+        const faucetBalance = data.xem.relativeAmount();
+        const drained = faucetBalance < XEM_MIN;
         res.render('index', {
           drained: drained,
           txHash: req.flash('txHash'),
           error: req.flash('error'),
-          xemMax: MAX_XEM / 1000000,
-          xemMin: MIN_XEM / 1000000,
-          xemOpt: OPT_XEM / 1000000,
+          xemMax: XEM_MAX,
+          xemMin: XEM_MIN,
+          xemOpt: XEM_OPT,
           address: address,
           message: message,
           encrypt: encrypt,
           mosaic: mosaic,
           amount: amount,
           faucetAddress: data.account.address.pretty(),
-          faucetAmount: data.mosaics[0].relativeAmount(),
-          recaptcha_secret: process.env.RECAPTCHA_CLIENT_SECRET,
+          faucetBalance: faucetBalance,
+          recaptchaSecret: process.env.RECAPTCHA_CLIENT_SECRET,
           network: process.env.NETWORK,
           apiHost: process.env.API_HOST,
           apiPort: process.env.API_PORT
-        })
+        });
       },
-      error(err) { next(err) },
-      complete() {}
-    })
-})
+      err => next(err)
+    );
+});
 
-module.exports = router
+module.exports = router;
