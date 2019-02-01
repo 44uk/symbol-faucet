@@ -40,11 +40,12 @@ router.get('/', function(req, res, next) {
           );
       }),
       op.catchError(err => {
-        const response = JSON.parse(err.response.text);
-        if (response.code === 'ResourceNotFound') {
-          throw new Error(
-            `Resource Not Found => ${faucetAccount.address.pretty()}`
-          );
+        if (err.code === 'ECONNREFUSED') {
+          throw new Error(err.message);
+        }
+        const res = JSON.parse(err.response.text);
+        if (res.code === 'ResourceNotFound') {
+          throw new Error(res.message);
         } else {
           throw new Error('Something wrong with MosaicService response');
         }

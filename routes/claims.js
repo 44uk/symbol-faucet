@@ -87,6 +87,9 @@ router.post('/', async (req, res, next) => {
       op.mergeMap(_ => _),
       op.find(mo => mo.fullName() === 'nem:xem'),
       op.catchError(err => {
+        if (err.code === 'ECONNREFUSED') {
+          throw new Error(err.message);
+        }
         const response = JSON.parse(err.response.text);
         if (response.code === 'ResourceNotFound') {
           return rx.of(null);
@@ -107,6 +110,9 @@ router.post('/', async (req, res, next) => {
       op.mergeMap(_ => _),
       op.find(mo => mo.fullName() === 'nem:xem'),
       op.catchError(err => {
+        if (err.code === 'ECONNREFUSED') {
+          throw new Error(err.message);
+        }
         const response = JSON.parse(err.response.text);
         if (response.code === 'ResourceNotFound') {
           return rx.of(null);
@@ -122,6 +128,11 @@ router.post('/', async (req, res, next) => {
       })
     ),
     accountHttp.outgoingTransactions(faucetAccount, { pageSize: 25 }).pipe(
+      op.catchError(err => {
+        if (err.code === 'ECONNREFUSED') {
+          throw new Error(err.message);
+        }
+      }),
       op.mergeMap(_ => _),
       op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
       op.filter(tx => {
@@ -140,6 +151,11 @@ router.post('/', async (req, res, next) => {
       })
     ),
     accountHttp.unconfirmedTransactions(faucetAccount, { pageSize: 100 }).pipe(
+      op.catchError(err => {
+        if (err.code === 'ECONNREFUSED') {
+          throw new Error(err.message);
+        }
+      }),
       op.mergeMap(_ => _),
       op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
       op.filter(tx => tx.recipient.equals(recipientAddress)),

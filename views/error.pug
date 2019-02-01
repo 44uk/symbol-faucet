@@ -6,7 +6,7 @@ block content
       .col.m12
         .alert._danger
           if errorBody
-            span= `${errorBody.code}: ${errorBody.message}`
+            span= errorBody.message
           else
             span= message
     .row
