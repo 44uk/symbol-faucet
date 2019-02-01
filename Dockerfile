@@ -1,10 +1,10 @@
 FROM node:8-alpine
-WORKDIR /app
 RUN apk update && apk upgrade && apk add --no-cache \
   make \
   g++ \
-  python \
-  && npm install --prod
+  python
+WORKDIR /app
 COPY . .
+RUN npm install --prod
 ENTRYPOINT ["npm"]
 CMD ["start"]
