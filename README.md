@@ -12,9 +12,7 @@ Need to set `PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
 
 If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `RECAPTCHA_SERVER_SECRET`.
 
-## Using with catapult-service-bootstrap
-
-Example
+## :handshake: Using with catapult-service-bootstrap
 
 Build image.
 
@@ -37,7 +35,7 @@ faucet:
     - rest-gateway
 ```
 
-## :fire: Setup
+## :fire: Customize
 
 ```shell
 # set enviroment variables
