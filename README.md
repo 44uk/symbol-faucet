@@ -36,8 +36,9 @@ faucet:
   image: 44uk/nem2-faucet
   stop_signal: SIGINT
   environment:
-    - PRIVATE_KEY=__PRIVATE_KEY__
+    - NETWORK=MIJIN_TEST
     - API_HOST=http://rest-gateway
+    - PRIVATE_KEY=__PRIVATE_KEY__
   ports:
     - '4000:4000'
   depends_on:
