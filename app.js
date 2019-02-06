@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   session({
-    secret: process.env.COOKIE_SECRET,
+    secret: process.env.COOKIE_SECRET || 'this_just_used_for_flash_message',
     cookie: { maxAge: 60000 }
   })
 );
