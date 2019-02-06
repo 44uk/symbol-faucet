@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:8-alpine AS builder
 RUN apk update && apk upgrade && apk add --no-cache \
   make \
   g++ \
@@ -6,5 +6,9 @@ RUN apk update && apk upgrade && apk add --no-cache \
 WORKDIR /app
 COPY . .
 RUN npm install --prod
+
+FROM node:8-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app /app
 ENTRYPOINT ["npm"]
 CMD ["start"]
