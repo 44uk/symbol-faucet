@@ -7,7 +7,7 @@ const router = express.Router();
 const XEM_MAX = parseInt(process.env.XEM_MAX || config.xemMax);
 const XEM_MIN = parseInt(process.env.XEM_MIN || config.xemMin);
 const XEM_OPT = parseInt(process.env.XEM_OPT || ~~((XEM_MAX + XEM_MIN) / 2));
-const API_URL = `${process.env.API_HOST}:${process.env.API_PORT}`;
+const API_URL = process.env.API_URL;
 
 const faucetAccount = nem.Account.createFromPrivateKey(
   process.env.PRIVATE_KEY,
@@ -71,8 +71,7 @@ router.get('/', function(req, res, next) {
           faucetBalance: faucetBalance,
           recaptchaSecret: process.env.RECAPTCHA_CLIENT_SECRET,
           network: process.env.NETWORK,
-          apiHost: process.env.API_HOST,
-          apiPort: process.env.API_PORT
+          apiUrl: process.env.API_URL
         });
       },
       err => next(err)

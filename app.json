@@ -14,13 +14,9 @@
     "NETWORK": {
       "value": "MIJIN_TEST"
     },
-    "API_HOST": {
-      "value": "http://localhost",
+    "API_URL": {
+      "value": "http://localhost:3000",
       "description": "API URL to connect."
-    },
-    "API_PORT": {
-      "value": "3000",
-      "description": "API port to connect."
     },
     "PRIVATE_KEY": {
       "value": "__SET_YOUR_KEY__",

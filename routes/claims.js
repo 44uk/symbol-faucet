@@ -27,7 +27,7 @@ const MAX_UNCONFIRMED = parseInt(
   process.env.MAX_UNCONFIRMED || config.maxUnconfirmed
 );
 const WAIT_HEIGHT = parseInt(process.env.WAIT_HEIGHT || config.waitHeight);
-const API_URL = `${process.env.API_HOST}:${process.env.API_PORT}`;
+const API_URL = process.env.API_URL;
 
 const router = express.Router();
 const faucetAccount = nem.Account.createFromPrivateKey(

@@ -12,19 +12,28 @@ Need to set `PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
 
 If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `RECAPTCHA_SERVER_SECRET`.
 
+## :whale: Dockerimage
+
+- [Docker Hub](https://cloud.docker.com/repository/docker/44uk/nem2-faucet)
+
 ## :handshake: Using with catapult-service-bootstrap
 
-Build image.
+### Build or Pull image
 
 ```console
-$ docker build -t nem2-faucet .
+# build image
+$ docker build -t my-nem2-faucet .
+
+# or pull from dockerhub
+$ docker pull 44uk/nem2-faucet
 ```
 
-Add as service.
+### Add as service.
 
 ```yaml:docker-compose.yml
 faucet:
-  image: nem2-faucet
+  # image: my-nem2-faucet # in case of built image
+  image: 44uk/nem2-faucet
   stop_signal: SIGINT
   environment:
     - PRIVATE_KEY=__PRIVATE_KEY__
@@ -42,8 +51,7 @@ faucet:
 # * COOKIE_SECRET
 # * PORT
 # * NETWORK
-# * API_HOST
-# * API_PORT
+# * API_URL
 # * PRIVATE_KEY
 # * XEM_MAX
 # * XEM_MIN
