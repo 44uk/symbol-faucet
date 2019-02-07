@@ -63,7 +63,7 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 ## :whale: Dockerimage
 
-- [Docker Hub](https://cloud.docker.com/repository/docker/44uk/nem2-faucet)
+- [44uk\/nem2-faucet | Docker Hub](https://hub.docker.com/r/44uk/nem2-faucet)
 
 ## :fire: Customize
 
