@@ -28,7 +28,7 @@ faucet:
   command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
   environment:
     - NETWORK=MIJIN_TEST
-    - API_HOST=http://rest-gateway
+    - API_URL=http://rest-gateway:3000
   volumes:
     - ./build/generated-addresses:/addresses:rw
   ports:
@@ -45,7 +45,7 @@ faucet:
   stop_signal: SIGINT
   environment:
     - NETWORK=MIJIN_TEST
-    - API_HOST=http://rest-gateway
+    - API_URL=http://rest-gateway:3000
     - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
   ports:
     - '4000:4000'
