@@ -4,18 +4,6 @@
 
 - [NEM2 Test Faucet](http://test-nem2-faucet.44uk.net/)
 
-## :sparkles: Deploy to Heroku
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
-Need to set `PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
-
-If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `RECAPTCHA_SERVER_SECRET`.
-
-## :whale: Dockerimage
-
-- [Docker Hub](https://cloud.docker.com/repository/docker/44uk/nem2-faucet)
-
 ## :handshake: Using with catapult-service-bootstrap
 
 ### Build or Pull image
@@ -28,22 +16,54 @@ $ docker build -t my-nem2-faucet .
 $ docker pull 44uk/nem2-faucet
 ```
 
-### Add as service.
+### Add as service
+
+Using nemesis Private Key automatically example.
 
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
   image: 44uk/nem2-faucet
   stop_signal: SIGINT
+  command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
   environment:
     - NETWORK=MIJIN_TEST
     - API_HOST=http://rest-gateway
-    - PRIVATE_KEY=__PRIVATE_KEY__
+  volumes:
+    - ./build/generated-addresses:/addresses:rw
   ports:
     - '4000:4000'
   depends_on:
     - rest-gateway
 ```
+
+Using specified PrivateKey example.
+
+```yaml:docker-compose.yml
+faucet:
+  image: 44uk/nem2-faucet
+  stop_signal: SIGINT
+  environment:
+    - NETWORK=MIJIN_TEST
+    - API_HOST=http://rest-gateway
+    - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
+  ports:
+    - '4000:4000'
+  depends_on:
+    - rest-gateway
+```
+
+## :sparkles: Deploy to Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+Need to set `PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
+
+If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `RECAPTCHA_SERVER_SECRET`.
+
+## :whale: Dockerimage
+
+- [Docker Hub](https://cloud.docker.com/repository/docker/44uk/nem2-faucet)
 
 ## :fire: Customize
 
@@ -62,7 +82,7 @@ faucet:
 # * WAIT_HEIGHT
 # * RECAPTCHA_CLIENT_SECRET
 # * RECAPTCHA_SERVER_SECRET
-# or edit .env
+# see .env.sample
 
 # install packages
 $ npm install
