@@ -18,7 +18,7 @@ $ docker pull 44uk/nem2-faucet
 
 ### Add as service
 
-Using nemesis Private Key automatically example.
+#### Using nemesis Private Key automatically example.
 
 ```yaml:docker-compose.yml
 faucet:
@@ -29,6 +29,7 @@ faucet:
   environment:
     - NETWORK=MIJIN_TEST
     - API_URL=http://rest-gateway:3000
+    - PUBLIC_URL=http://localhost:3000
   volumes:
     - ./build/generated-addresses:/addresses:rw
   ports:
@@ -37,7 +38,7 @@ faucet:
     - rest-gateway
 ```
 
-Using specified PrivateKey example.
+#### Using specific PrivateKey example.
 
 ```yaml:docker-compose.yml
 faucet:
@@ -46,6 +47,25 @@ faucet:
   environment:
     - NETWORK=MIJIN_TEST
     - API_URL=http://rest-gateway:3000
+    - PUBLIC_URL=http://localhost:3000
+    - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
+  ports:
+    - '4000:4000'
+  depends_on:
+    - rest-gateway
+```
+
+#### Specific Mosaic faucet example.
+
+```yaml:docker-compose.yml
+faucet:
+  image: 44uk/nem2-faucet
+  stop_signal: SIGINT
+  environment:
+    - NETWORK=MIJIN_TEST
+    - API_URL=http://rest-gateway:3000
+    - PUBLIC_URL=http://localhost:3000
+    - MOSAIC_FQN=jpn:jpy
     - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
   ports:
     - '4000:4000'
@@ -69,14 +89,16 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 ```shell
 # set enviroment variables
-# * COOKIE_SECRET
-# * PORT
-# * NETWORK
-# * API_URL
+# * COOKIE_SECRET (it is just used for flash message)
+# * PORT (default: 4000)
+# * NETWORK (default: MIJIN_TEST)
 # * PRIVATE_KEY
-# * XEM_MAX
-# * XEM_MIN
-# * XEM_OPT
+# * API_URL
+# * PUBLIC_URL
+# * MOSAIC_FQN (default: nem:xem)
+# * OUT_MAX
+# * OUT_MIN
+# * OUT_OPT
 # * ENOUGH_BALANCE
 # * MAX_UNCONFIRMED
 # * WAIT_HEIGHT

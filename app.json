@@ -14,31 +14,40 @@
     "NETWORK": {
       "value": "MIJIN_TEST"
     },
-    "API_URL": {
-      "value": "http://localhost:3000",
-      "description": "API URL to connect."
-    },
     "PRIVATE_KEY": {
       "value": "__SET_YOUR_KEY__",
       "description": "PrivateKey of Faucet Account that you want to assign."
     },
-    "XEM_MIN": {
-      "value": "100"
+    "API_URL": {
+      "value": "http://localhost:3000",
+      "description": "API URL to connect."
     },
-    "XEM_MAX": {
-      "value": "500"
+    "PUBLIC_URL": {
+      "required": false,
+      "description": "For link url."
     },
-    "XEM_OPT": {
-      "value": "300"
+    "MOSAIC_FQN": {
+      "value": "nem:xem",
+      "required": false,
+      "description": "Serving mosaic FQN."
+    },
+    "OUT_MIN": {
+      "value": "1000"
+    },
+    "OUT_MAX": {
+      "value": "5000"
+    },
+    "OUT_OPT": {
+      "required": false
     },
     "ENOUGH_BALANCE": {
-      "value": "200"
+      "value": "1000000"
     },
     "MAX_UNCONFIRMED": {
-      "value": "3"
+      "value": "99"
     },
     "WAIT_HEIGHT": {
-      "value": "3"
+      "value": "0"
     },
     "RECAPTCHA_CLIENT_SECRET": {
       "required": false,

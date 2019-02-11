@@ -4,9 +4,10 @@ const nem = require('nem2-sdk');
 const op = require('rxjs/operators');
 const router = express.Router();
 
-const XEM_MAX = parseInt(process.env.XEM_MAX || config.xemMax);
-const XEM_MIN = parseInt(process.env.XEM_MIN || config.xemMin);
-const XEM_OPT = parseInt(process.env.XEM_OPT || ~~((XEM_MAX + XEM_MIN) / 2));
+const MOSAIC_FQN = process.env.MOSAIC_FQN || 'nem:xem';
+const OUT_MAX = parseInt(process.env.OUT_MAX || config.outMax);
+const OUT_MIN = parseInt(process.env.OUT_MIN || config.outMin);
+const OUT_OPT = parseInt(process.env.OUT_OPT || ~~((OUT_MAX + OUT_MIN) / 2));
 const API_URL = process.env.API_URL;
 
 const faucetAccount = nem.Account.createFromPrivateKey(
@@ -35,8 +36,8 @@ router.get('/', function(req, res, next) {
           .mosaicsAmountViewFromAddress(faucetAccount.address)
           .pipe(
             op.mergeMap(_ => _),
-            op.find(mosaic => mosaic.fullName() === 'nem:xem'),
-            op.map(xem => ({ xem, account }))
+            op.find(mosaic => mosaic.fullName() === MOSAIC_FQN),
+            op.map(mosaic => ({ mosaic, account }))
           );
       }),
       op.catchError(err => {
@@ -52,26 +53,29 @@ router.get('/', function(req, res, next) {
       })
     )
     .subscribe(
-      data => {
-        const faucetBalance = data.xem.relativeAmount();
-        const drained = faucetBalance < XEM_MIN;
+      mosaicView => {
+        const faucetBalance = mosaicView.mosaic.relativeAmount();
+        const drained = faucetBalance < OUT_MIN;
         res.render('index', {
           drained: drained,
           txHash: req.flash('txHash'),
           error: req.flash('error'),
-          xemMax: XEM_MAX,
-          xemMin: XEM_MIN,
-          xemOpt: XEM_OPT,
+          outMax: OUT_MAX,
+          outMin: OUT_MIN,
+          outOpt: OUT_OPT,
+          step: 1 / Math.pow(10, mosaicView.mosaic.mosaicInfo.divisibility),
           address: address,
           message: message,
           encrypt: encrypt,
           mosaic: mosaic,
           amount: amount,
-          faucetAddress: data.account.address.pretty(),
+          faucetAddress: mosaicView.account.address.pretty(),
           faucetBalance: faucetBalance,
           recaptchaSecret: process.env.RECAPTCHA_CLIENT_SECRET,
           network: process.env.NETWORK,
-          apiUrl: process.env.API_URL
+          apiUrl: process.env.API_URL,
+          publicUrl: process.env.PUBLIC_URL || process.env.API_URL,
+          mosaicFqn: MOSAIC_FQN
         });
       },
       err => next(err)
