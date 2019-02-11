@@ -18,8 +18,10 @@ const GOOGLE_RECAPTCHA_ENDPOINT =
 const GOOGLE_RECAPTCHA_ENABLED = !_.isBlank(
   process.env.RECAPTCHA_SERVER_SECRET
 );
-const XEM_MAX = parseInt(process.env.XEM_MAX || config.xemMax);
-const XEM_MIN = parseInt(process.env.XEM_MIN || config.xemMin);
+
+const MOSAIC_FQN = process.env.MOSAIC_FQN || 'nem:xem';
+const OUT_MAX = parseInt(process.env.OUT_MAX || config.outMax);
+const OUT_MIN = parseInt(process.env.OUT_MIN || config.outMin);
 const ENOUGH_BALANCE = parseInt(
   process.env.ENOUGH_BALANCE || config.enoughBalance
 );
@@ -83,9 +85,10 @@ router.post('/', async (req, res, next) => {
   console.debug(`Current Height => %d`, currentHeight.compact());
 
   rx.forkJoin([
+    mosaicHttp.getMosaic(new nem.MosaicId(MOSAIC_FQN)),
     mosaicService.mosaicsAmountViewFromAddress(recipientAddress).pipe(
       op.mergeMap(_ => _),
-      op.find(mo => mo.fullName() === 'nem:xem'),
+      op.find(mo => mo.fullName() === MOSAIC_FQN),
       op.catchError(err => {
         if (err.code === 'ECONNREFUSED') {
           throw new Error(err.message);
@@ -97,18 +100,18 @@ router.post('/', async (req, res, next) => {
           throw new Error('Something wrong with MosaicService response');
         }
       }),
-      op.map(xem => {
-        if (xem && xem.relativeAmount() > ENOUGH_BALANCE) {
+      op.map(mosaic => {
+        if (mosaic && mosaic.relativeAmount() > ENOUGH_BALANCE) {
           throw new Error(
-            `Your account already has enough balance => (${xem.relativeAmount()})`
+            `Your account already has enough balance => (${mosaic.relativeAmount()})`
           );
         }
-        return xem;
+        return mosaic;
       })
     ),
     mosaicService.mosaicsAmountViewFromAddress(faucetAccount.address).pipe(
       op.mergeMap(_ => _),
-      op.find(mo => mo.fullName() === 'nem:xem'),
+      op.find(mo => mo.fullName() === MOSAIC_FQN),
       op.catchError(err => {
         if (err.code === 'ECONNREFUSED') {
           throw new Error(err.message);
@@ -120,11 +123,11 @@ router.post('/', async (req, res, next) => {
           throw new Error('Something wrong with MosaicService response');
         }
       }),
-      op.map(xem => {
-        if (xem.relativeAmount() < 50000) {
+      op.map(mosaic => {
+        if (mosaic.relativeAmount() < 50000) {
           throw new Error('The faucet has been drained.');
         }
-        return xem;
+        return mosaic;
       })
     ),
     accountHttp.outgoingTransactions(faucetAccount, { pageSize: 25 }).pipe(
@@ -150,7 +153,7 @@ router.post('/', async (req, res, next) => {
         return true;
       })
     ),
-    accountHttp.unconfirmedTransactions(faucetAccount, { pageSize: 100 }).pipe(
+    accountHttp.unconfirmedTransactions(faucetAccount, { pageSize: 25 }).pipe(
       op.catchError(err => {
         if (err.code === 'ECONNREFUSED') {
           throw new Error(err.message);
@@ -170,7 +173,7 @@ router.post('/', async (req, res, next) => {
   ])
     .pipe(
       op.mergeMap(results => {
-        const [_, xemFaucetOwned, outgoings, unconfirmed] = results;
+        const [mosaicInfo, _, faucetOwned, outgoings, unconfirmed] = results;
 
         if (!(outgoings && unconfirmed)) {
           throw new Error(
@@ -179,17 +182,23 @@ router.post('/', async (req, res, next) => {
         }
 
         // determine amount to pay out
-        const faucetBalance = xemFaucetOwned.amount.compact() - 1000000;
+        const faucetBalance = faucetOwned.amount.compact();
         const txAmount =
-          sanitizeAmount(amount) ||
-          Math.min(faucetBalance, randomInRange(XEM_MIN, XEM_MAX));
-        console.debug(`Faucet balance => %d`, faucetBalance);
+          sanitizeAmount(amount, mosaicInfo.divisibility) ||
+          Math.min(faucetBalance, randomInRange(OUT_MIN, OUT_MAX));
+
+        console.debug(`Faucet balance => %d`, faucetOwned.relativeAmount());
         console.debug(`Payout amount => %d`, txAmount);
 
+        const mosaic = new nem.Mosaic(
+          mosaicInfo.mosaicId,
+          nem.UInt64.fromUint(txAmount * Math.pow(10, mosaicInfo.divisibility))
+        );
         const message = buildMessage(req.body.message, req.body.encrypt, null);
         const transferTx = buildTransferTransaction(
           recipientAddress,
-          nem.XEM.createRelative(txAmount),
+          mosaic,
+          // nem.XEM.createRelative(txAmount),
           message
         );
         const signedTx = faucetAccount.sign(transferTx);
@@ -270,9 +279,9 @@ function randomInRange(from, to) {
 }
 
 function sanitizeAmount(amount) {
-  amount = parseFloat(amount) * 1000000;
-  if (amount > XEM_MAX) {
-    return XEM_MAX;
+  amount = parseFloat(amount);
+  if (amount > OUT_MAX) {
+    return OUT_MAX;
   } else if (amount < 0) {
     return 0;
   } else {

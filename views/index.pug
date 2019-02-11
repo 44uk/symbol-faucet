@@ -22,7 +22,7 @@ block content
             input._width100(type="text" name="message" value=message placeholder="(Optional)" maxLength="1023" disabled=drained)
           div
             label Amount
-            input._width100(type="number" name="amount" value=amount placeholder=`(Up to ${xemOpt}. Optional, if you want fixed amount)` min="0" max=xemOpt step="0.05" disabled=drained)
+            input._width100(type="number" name="amount" value=amount placeholder=`(Up to ${outOpt}. Optional, if you want fixed amount)` min="0" max=outOpt step=`${step}` disabled=drained)
 
         .col.m4
           if recaptchaSecret
@@ -51,11 +51,11 @@ block content
       .col.m12
         h3 Readme
         ul
-          li This is "#{network} XEM faucet" on
+          li This is "#{network} faucet" on
             | &nbsp;
-            a(href=`${apiUrl}` target="_blank") #{apiUrl}
+            a(href=`${publicUrl}` target="_blank") #{publicUrl}
             | .
-          li You can get XEM randomly from #{xemMin} to #{xemMax}.
+          li You can get "#{mosaicFqn}" randomly from #{outMin} to #{outMax}.
+          li Please send back "#{mosaicFqn}" when you need no longer need.
           li This is an experimental server, the spec can be change without notice.
-          li Please send back XEM when you need no longer need.
           li Good luck! NEM development!
