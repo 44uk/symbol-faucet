@@ -1,4 +1,4 @@
-# :potable_water: NEM Faucet
+# :potable_water: NEM2 (catapult) Faucet
 
 ## :heartbeat: Demo
 
@@ -18,7 +18,7 @@ $ docker pull 44uk/nem2-faucet
 
 ### Add as service
 
-#### Using nemesis Private Key automatically example.
+#### (Quickest) Using nemesis Private Key example
 
 ```yaml:docker-compose.yml
 faucet:
@@ -27,9 +27,9 @@ faucet:
   stop_signal: SIGINT
   command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
   environment:
-    - NETWORK=MIJIN_TEST
-    - API_URL=http://rest-gateway:3000
-    - PUBLIC_URL=http://localhost:3000
+    - NEM_NETWORK=MIJIN_TEST
+    - NEM_API_URL=http://rest-gateway:3000
+    - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
     - ./build/generated-addresses:/addresses:rw
   ports:
@@ -38,35 +38,35 @@ faucet:
     - rest-gateway
 ```
 
-#### Using specific PrivateKey example.
+#### Using specific PrivateKey example
 
 ```yaml:docker-compose.yml
 faucet:
   image: 44uk/nem2-faucet
   stop_signal: SIGINT
   environment:
-    - NETWORK=MIJIN_TEST
-    - API_URL=http://rest-gateway:3000
-    - PUBLIC_URL=http://localhost:3000
-    - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
+    - NEM_NETWORK=MIJIN_TEST
+    - NEM_API_URL=http://rest-gateway:3000
+    - NEM_PUBLIC_URL=http://localhost:3000
+    - NEM_PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
   ports:
     - '4000:4000'
   depends_on:
     - rest-gateway
 ```
 
-#### Specific Mosaic faucet example.
+#### Specific Mosaic faucet example
 
 ```yaml:docker-compose.yml
 faucet:
   image: 44uk/nem2-faucet
   stop_signal: SIGINT
   environment:
-    - NETWORK=MIJIN_TEST
-    - API_URL=http://rest-gateway:3000
-    - PUBLIC_URL=http://localhost:3000
-    - MOSAIC_FQN=jpn:jpy
-    - PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
+    - NEM_NETWORK=MIJIN_TEST
+    - NEM_API_URL=http://rest-gateway:3000
+    - NEM_PUBLIC_URL=http://localhost:3000
+    - NEM_MOSAIC_FQN=jpn:jpy
+    - NEM_PRIVATE_KEY=__YOUR_PRIVATE_KEY__
   ports:
     - '4000:4000'
   depends_on:
@@ -77,7 +77,7 @@ faucet:
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-Need to set `PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
+Need to set `NEM_PRIVATE_KEY`(PrivateKey of your faucet account) while deployment.
 
 If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `RECAPTCHA_SERVER_SECRET`.
 
@@ -89,19 +89,18 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 ```shell
 # set enviroment variables
-# * COOKIE_SECRET (it is just used for flash message)
 # * PORT (default: 4000)
-# * NETWORK (default: MIJIN_TEST)
-# * PRIVATE_KEY
-# * API_URL
-# * PUBLIC_URL
-# * MOSAIC_FQN (default: nem:xem)
-# * OUT_MAX
-# * OUT_MIN
-# * OUT_OPT
-# * ENOUGH_BALANCE
-# * MAX_UNCONFIRMED
-# * WAIT_HEIGHT
+# * NEM_NETWORK (default: MIJIN_TEST)
+# * NEM_PRIVATE_KEY
+# * NEM_API_URL
+# * NEM_PUBLIC_URL
+# * NEM_MOSAIC_FQN (default: nem:xem)
+# * NEM_OUT_MAX
+# * NEM_OUT_MIN
+# * NEM_OUT_OPT
+# * NEM_ENOUGH_BALANCE
+# * NEM_MAX_UNCONFIRMED
+# * NEM_WAIT_HEIGHT
 # * RECAPTCHA_CLIENT_SECRET
 # * RECAPTCHA_SERVER_SECRET
 # see .env.sample
@@ -120,5 +119,5 @@ $ npm run dev
 
 - [NEM - Distributed Ledger Technology (Blockchain) Catapult](https://www.nem.io/catapult/)
 - [nemtech/nem2\-sdk\-typescript\-javascript: nem2\-sdk official for typescript & javascript](https://github.com/nemtech/nem2-sdk-typescript-javascript)
-- [Express - Fast, unopinionated, minimalist web framework for node.](https://github.com/expressjs/express)
-- [Beauter - A simple framework for faster and beautiful responsive sites](http://beauter.outboxcraft.com/)
+- [nuxt/nuxt\.js: The Vue\.js Framework](https://github.com/nuxt/nuxt.js)
+- [44uk/nem2\-faucet: Faucet application for nem2 \(catapult\)](https://github.com/44uk/nem2-faucet)

@@ -1,63 +1,64 @@
 {
   "name": "nem2-faucet",
   "description": "Faucet application for nem2",
-  "keywords": ["nem", "catapult", "blockchain"],
+  "keywords": [
+    "nem",
+    "catapult",
+    "blockchain"
+  ],
   "website": "https://github.com/44uk/nem2-faucet/",
   "repository": "https://github.com/44uk/nem2-faucet/tree/master",
   "env": {
-    "COOKIE_SECRET": {
-      "generator": "secret"
-    },
     "PORT": {
       "value": "80"
     },
-    "NETWORK": {
+    "NEM_NETWORK": {
       "value": "MIJIN_TEST"
     },
-    "PRIVATE_KEY": {
+    "NEM_PRIVATE_KEY": {
       "value": "__SET_YOUR_KEY__",
       "description": "PrivateKey of Faucet Account that you want to assign."
     },
-    "API_URL": {
-      "value": "http://localhost:3000",
+    "NEM_API_URL": {
+      "value": "http://catapult-api.example.com:3000",
       "description": "API URL to connect."
     },
-    "PUBLIC_URL": {
+    "NEM_PUBLIC_URL": {
       "required": false,
       "description": "For link url."
     },
-    "MOSAIC_FQN": {
+    "NEM_MOSAIC_FQN": {
       "value": "nem:xem",
       "required": false,
       "description": "Serving mosaic FQN."
     },
-    "OUT_MIN": {
-      "value": "1000"
+    "NEM_OUT_MIN": {
+      "value": "1000000000"
     },
-    "OUT_MAX": {
-      "value": "5000"
+    "NEM_OUT_MAX": {
+      "value": "5000000000"
     },
-    "OUT_OPT": {
+    "NEM_OUT_OPT": {
       "required": false
     },
-    "ENOUGH_BALANCE": {
-      "value": "1000000"
+    "NEM_ENOUGH_BALANCE": {
+      "value": "100000000000"
     },
-    "MAX_UNCONFIRMED": {
+    "NEM_MAX_UNCONFIRMED": {
       "value": "99"
     },
-    "WAIT_HEIGHT": {
+    "NEM_WAIT_HEIGHT": {
       "value": "0"
     },
     "RECAPTCHA_CLIENT_SECRET": {
       "required": false,
-      "description": "(Optional) disabled ReCaptcha if it is blank."
+      "description": "(Optional) disabled ReCaptcha if this is blank."
     },
     "RECAPTCHA_SERVER_SECRET": {
       "required": false,
-      "description": "(Optional) disabled ReCaptcha if it is blank."
+      "description": "(Optional) disabled ReCaptcha if this is blank."
     }
   },
   "addons": [],
-  "buildpacks": [{ "url": "heroku/nodejs" }]
+  "buildpacks": []
 }

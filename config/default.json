@@ -1,7 +1,0 @@
-{
-  "outMin": 100,
-  "outMax": 300,
-  "enoughBalance": 10000,
-  "maxUnconfirmed": 3,
-  "waitHeight": 3
-}
