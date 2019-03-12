@@ -13,7 +13,7 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/nem2-faucet
+$ docker pull 44uk/nem2-faucet:alpaca
 ```
 
 ### Add as service
@@ -23,7 +23,7 @@ $ docker pull 44uk/nem2-faucet
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
-  image: 44uk/nem2-faucet
+  image: 44uk/nem2-faucet:alpaca
   stop_signal: SIGINT
   command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
   environment:
