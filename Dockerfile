@@ -5,7 +5,7 @@ RUN apk update && apk upgrade && apk add --no-cache \
   python
 WORKDIR /app
 COPY . .
-RUN npm install --prod
+RUN npm install --prod && npm run build
 
 FROM node:8-alpine AS runner
 WORKDIR /app
