@@ -42,7 +42,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet
+  image: 44uk/nem2-faucet:alpaca
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -59,7 +59,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet
+  image: 44uk/nem2-faucet:alpaca
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
