@@ -207,9 +207,9 @@ function buildMessage(message, encrypt = false, publicAccount = null) {
     throw new Error('Public Key required to encrypt message.')
   }
   if (encrypt) {
-    // NOTE: nem2-sdk does not have EncryptMessage yet.
+    // TODO: nem2-sdk does not have EncryptMessage yet.
     console.debug('Encrypted message => %s', message)
-    throw new Error('Not implemented Encrypt message.')
+    throw new Error('Encrypt message not supported.')
   } else if (_.isBlank(message)) {
     console.debug('Empty message')
     return nem.EmptyMessage

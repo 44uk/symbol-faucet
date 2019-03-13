@@ -4,13 +4,22 @@ section.section
     .content
       h3.title 📄 Readme
       ul
-        li This is "{{network}}" out faucet connected to
-          | &nbsp;
-          a(:href="publicUrl" target="_blank") {{publicUrl}}
+        li
+          strong "{{network}}"
+          | &nbsp;faucet connected to&nbsp;
+          a(:href="publicUrl" target="_blank"): strong {{publicUrl}}
           | .
-        li You can get "{{mosaicFqn}}" randomly from {{outMin}} to {{outMax}}.
+        li You can get&nbsp;
+          strong "{{mosaicFqn}}"
+          | &nbsp;randomly from&nbsp;
+          strong {{outMin}}
+          | &nbsp;to&nbsp;
+          strong {{outMax}}
+          |.
+        li Please send back&nbsp;
+          strong "{{mosaicFqn}}"
+          | &nbsp;when you no longer need.
         li This is an experimental server, the spec can be change without notice.
-        li Please send back "{{mosaicFqn}}" when you no longer need.
         li Good luck! NEM development!
 </template>
 
