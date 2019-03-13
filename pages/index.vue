@@ -117,7 +117,9 @@ export default {
     return data
   },
   async mounted() {
-    await this.$recaptcha.init()
+    if (this.$recaptcha) {
+      await this.$recaptcha.init()
+    }
     if (process.browser) {
       /* eslint nuxt/no-globals-in-created: 0 */
       const params = qs.parse(window.location.search.substring(1))
@@ -130,9 +132,12 @@ export default {
     async claim() {
       this.waiting = true
       this.$router.push({ path: this.$route.path, query: this.form })
-      const reCaptcha = await this.$recaptcha.execute('login')
+      const formData = { ...this.form }
+      if (this.$recaptcha) {
+        formData.reCaptcha = await this.$recaptcha.execute('login')
+      }
       axios
-        .post('/claims', { reCaptcha, ...this.form })
+        .post('/claims', formData)
         .then(response => {
           this.info(`Send your declaration.`)
           this.success(`Amount: ${response.data.amount} ${this.mosaicFqn}`)

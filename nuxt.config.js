@@ -1,6 +1,11 @@
 const pkg = require('./package')
 require('dotenv').config({ path: '.env' })
 
+const recaptchaPlugin =
+  process.env.RECAPTCHA_CLIENT_SECRET && process.env.RECAPTCHA_SERVER_SECRET
+    ? ['@nuxtjs/recaptcha']
+    : []
+
 module.exports = {
   mode: 'universal',
 
@@ -44,10 +49,8 @@ module.exports = {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     // Doc: https://buefy.github.io/#/documentation
-    'nuxt-buefy',
-    '@nuxtjs/recaptcha'
-    // '@nuxtjs/dotenv'
-  ],
+    'nuxt-buefy'
+  ].concat(recaptchaPlugin),
 
   /*
    ** Axios module configuration
