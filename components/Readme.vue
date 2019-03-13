@@ -10,14 +10,14 @@ section.section
           a(:href="publicUrl" target="_blank"): strong {{publicUrl}}
           | .
         li You can get&nbsp;
-          strong "{{mosaicFqn}}"
+          strong "{{mosaicId}}"
           | &nbsp;randomly from&nbsp;
           strong {{outMin}}
           | &nbsp;to&nbsp;
           strong {{outMax}}
           |.
         li Please send back&nbsp;
-          strong "{{mosaicFqn}}"
+          strong "{{mosaicId}}"
           | &nbsp;when you no longer need.
         li This is an experimental server, the spec can be change without notice.
         li Good luck! NEM development!
@@ -28,7 +28,7 @@ export default {
   props: {
     network: String,
     publicUrl: String,
-    mosaicFqn: String,
+    mosaicId: String,
     outMin: Number,
     outMax: Number
   }

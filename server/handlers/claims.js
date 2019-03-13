@@ -11,195 +11,202 @@ _.mixin({
   }
 })
 
-const GOOGLE_RECAPTCHA_ENDPOINT =
-  'https://www.google.com/recaptcha/api/siteverify'
-const GOOGLE_RECAPTCHA_ENABLED = !_.isBlank(process.env.RECAPTCHA_SERVER_SECRET)
-const API_URL = process.env.NEM_API_URL
-const MOSAIC_FQN = process.env.NEM_MOSAIC_FQN || 'nem:xem'
-const OUT_MIN = parseInt(process.env.NEM_OUT_MIN)
-const OUT_MAX = parseInt(process.env.NEM_OUT_MAX)
-const ENOUGH_BALANCE = parseInt(process.env.NEM_ENOUGH_BALANCE || '100000000000')
-const MAX_UNCONFIRMED = parseInt(process.env.NEM_MAX_UNCONFIRMED || '99')
-const WAIT_HEIGHT = parseInt(process.env.NEM_WAIT_HEIGHT || '0')
+const handler = conf => {
+  const blockchainHttp = new nem.BlockchainHttp(conf.API_URL)
+  const transactionHttp = new nem.TransactionHttp(conf.API_URL)
+  const accountHttp = new nem.AccountHttp(conf.API_URL)
+  const namespaceHttp = new nem.NamespaceHttp(conf.API_URL)
+  const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
+  const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
 
-const faucetAccount = nem.Account.createFromPrivateKey(
-  process.env.NEM_PRIVATE_KEY,
-  nem.NetworkType[process.env.NEM_NETWORK]
-)
-const accountHttp = new nem.AccountHttp(API_URL)
-const blockchainHttp = new nem.BlockchainHttp(API_URL)
-const namespaceHttp = new nem.NamespaceHttp(API_URL)
-const mosaicHttp = new nem.MosaicHttp(API_URL)
-const mosaicService = new nem.MosaicService(
-  accountHttp,
-  mosaicHttp,
-  namespaceHttp
-)
-const transactionHttp = new nem.TransactionHttp(API_URL)
+  const distributionMosaicIdObservable = conf.MOSAIC_HEX
+    ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
+    : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
 
-const handler = async (req, res, next) => {
-  const { recipient, amount, message, reCaptcha } = req.body
-  if (GOOGLE_RECAPTCHA_ENABLED) {
-    const reCaptchaResult = await requestReCaptchaValidation(reCaptcha).catch(
-      _ => false
-    )
-    if (!reCaptchaResult) {
-      res.status(422).json({ error: 'Failed ReCaptcha.' })
-    }
-  }
-
-  const currentHeight = await blockchainHttp
-    .getBlockchainHeight()
-    .toPromise()
-    .catch(err => err)
-  const recipientAddress = nem.Address.createFromRawAddress(recipient)
-  console.debug(`Current Height => %d`, currentHeight.compact())
-  console.debug(`Recipient => %s`, recipientAddress.pretty())
-
-  rx.forkJoin([
-    mosaicService.mosaicsAmountViewFromAddress(recipientAddress).pipe(
-      op.mergeMap(_ => _),
-      op.find(mo => mo.fullName() === MOSAIC_FQN),
-      op.catchError(err => {
-        if (err.code === 'ECONNREFUSED') {
-          throw new Error(err.message)
-        }
-        const response = JSON.parse(err.response.text)
-        if (response.code === 'ResourceNotFound') {
-          return rx.of(null)
-        } else {
-          throw new Error('Something wrong with MosaicService response')
-        }
-      }),
-      op.map(mosaic => {
-        if (mosaic && mosaic.amount.compact() > ENOUGH_BALANCE) {
-          throw new Error(
-            `Your account already has enough balance => (${mosaic.relativeAmount()})`
-          )
-        }
-        return mosaic
-      })
-    ),
-    mosaicService.mosaicsAmountViewFromAddress(faucetAccount.address).pipe(
-      op.mergeMap(_ => _),
-      op.find(mo => mo.fullName() === MOSAIC_FQN),
-      op.catchError(err => {
-        if (err.code === 'ECONNREFUSED') {
-          throw new Error(err.message)
-        }
-        const response = JSON.parse(err.response.text)
-        if (response.code === 'ResourceNotFound') {
-          return rx.of(null)
-        } else {
-          throw new Error('Something wrong with MosaicService response')
-        }
-      }),
-      op.map(mosaic => {
-        if (mosaic.amount.compact() < OUT_MAX) {
-          throw new Error('The faucet has been drained.')
-        }
-        return mosaic
-      })
-    ),
-    mosaicHttp.getMosaic(new nem.MosaicId(MOSAIC_FQN)),
-    accountHttp.outgoingTransactions(faucetAccount, { pageSize: 25 }).pipe(
-      op.catchError(err => {
-        if (err.code === 'ECONNREFUSED') {
-          throw new Error(err.message)
-        }
-      }),
-      op.mergeMap(_ => _),
-      op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-      op.filter(tx => {
-        return (
-          tx.recipient.equals(recipientAddress) &&
-          currentHeight.compact() - tx.transactionInfo.height.compact() <
-          WAIT_HEIGHT
-        )
-      }),
-      op.toArray(),
-      op.map(txes => {
-        if (txes.length > 0) {
-          throw new Error(
-            `Too many claiming. Please wait for ${WAIT_HEIGHT} blocks.`
-          )
-        }
-        return true
-      })
-    ),
-    accountHttp.unconfirmedTransactions(faucetAccount, { pageSize: 25 }).pipe(
-      op.catchError(err => {
-        if (err.code === 'ECONNREFUSED') {
-          throw new Error(err.message)
-        }
-      }),
-      op.mergeMap(_ => _),
-      op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-      op.filter(tx => tx.recipient.equals(recipientAddress)),
-      op.toArray(),
-      op.map(txes => {
-        if (txes.length > MAX_UNCONFIRMED) {
-          throw new Error(
-            `Too many unconfirmed claiming. Please wait for blocks confirmed.`
-          )
-        }
-        return true
-      })
-    )
-  ])
-    .pipe(
-      op.mergeMap(results => {
-        const [, faucetOwned, mosaicInfo, outgoings, unconfirmed] = results
-
-        if (!(outgoings && unconfirmed)) {
-          throw new Error(
-            'Something wrong with outgoing or unconfirmed checking.'
-          )
-        }
-
-        // determine amount to pay out
-        const faucetBalance = faucetOwned.amount.compact()
-        const divisibility = mosaicInfo.divisibility
-        const txAbsoluteAmount =
-          sanitizeAmount(amount, divisibility) ||
-          Math.min(faucetBalance, randomInRange(OUT_MIN, OUT_MAX, divisibility))
-        console.debug(`Faucet balance => %d`, faucetOwned.relativeAmount())
-        console.debug(`Mosaic divisibility => %d`, mosaicInfo.divisibility)
-        console.debug(`Application amount => %s`, amount)
-        console.debug(`Payout amount => %d`, txAbsoluteAmount)
-
-        const mosaic = new nem.Mosaic(
-          mosaicInfo.mosaicId,
-          nem.UInt64.fromUint(txAbsoluteAmount)
-        )
-        const transferTx = buildTransferTransaction(
-          recipientAddress,
-          mosaic,
-          buildMessage(message, req.body.encrypt, null)
-        )
-
-        const signedTx = faucetAccount.sign(transferTx)
-        return transactionHttp.announce(signedTx).pipe(
-          op.mergeMap(response => {
-            return rx.of({
-              response,
-              txHash: signedTx.hash,
-              amount: txAbsoluteAmount / Math.pow(10, mosaicInfo.divisibility)
-            })
-          })
-        )
-      })
-    )
-    .subscribe(
-      result => {
-        const { txHash, amount } = result
-        res.json({ txHash, amount })
-      },
-      err => {
-        console.error(err)
-        res.status(422).json({ error: err.message })
+  return async (req, res, next) => {
+    const { recipient, amount, message, reCaptcha } = req.body
+    if (conf.RECAPTCHA_ENABLED) {
+      const reCaptchaResult = await requestReCaptchaValidation(
+        reCaptcha,
+        conf.RECAPTCHA_SERVER_SECRET,
+        conf.RECAPTCHA_ENDPOINT
+      ).catch(_ => false)
+      if (!reCaptchaResult) {
+        res.status(422).json({ error: 'Failed ReCaptcha.' })
       }
-    )
+    } else {
+      console.debug('Disabled ReCaptcha')
+    }
+
+    const recipientAddress = nem.Address.createFromRawAddress(recipient)
+    console.debug(`Recipient => %s`, recipientAddress.pretty())
+
+    rx.forkJoin([
+      distributionMosaicIdObservable,
+      blockchainHttp.getBlockchainHeight()
+    ])
+      .pipe(
+        op.tap(([distributionMosaicId, currentHeight]) => {
+          console.debug(`Distribution MosaicId => %o`, distributionMosaicId)
+          console.debug(`Current Height => %d`, currentHeight.compact())
+        }),
+        op.mergeMap(([distributionMosaicId, currentHeight]) => {
+          return rx.forkJoin([
+            mosaicHttp.getMosaic(distributionMosaicId),
+            mosaicService.mosaicsAmountViewFromAddress(recipientAddress).pipe(
+              op.mergeMap(_ => _),
+              op.find(mosaicView =>
+                mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
+              ),
+              op.catchError(err => {
+                if (err.code === 'ECONNREFUSED') {
+                  throw new Error(err.message)
+                }
+                const response = JSON.parse(err.response.text)
+                if (response.code === 'ResourceNotFound') {
+                  return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
+                } else {
+                  throw new Error('Something wrong with MosaicService response')
+                }
+              }),
+              op.map(mosaic => {
+                if (mosaic && mosaic.amount.compact() > conf.ENOUGH_BALANCE) {
+                  throw new Error(
+                    `Your account already has enough balance => (${mosaic.relativeAmount()})`
+                  )
+                }
+                return mosaic
+              })
+            ),
+            mosaicService
+              .mosaicsAmountViewFromAddress(conf.FAUCET_ACCOUNT.address)
+              .pipe(
+                op.mergeMap(_ => _),
+                op.find(mosaicView =>
+                  mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
+                ),
+                op.catchError(err => {
+                  if (err.code === 'ECONNREFUSED') {
+                    throw new Error(err.message)
+                  }
+                  const response = JSON.parse(err.response.text)
+                  if (response.code === 'ResourceNotFound') {
+                    return rx.of(null)
+                  } else {
+                    throw new Error(
+                      'Something wrong with MosaicService response'
+                    )
+                  }
+                }),
+                op.map(mosaic => {
+                  if (mosaic.amount.compact() < conf.OUT_MAX) {
+                    throw new Error('The faucet has been drained.')
+                  }
+                  return mosaic
+                })
+              ),
+            accountHttp
+              .outgoingTransactions(conf.FAUCET_ACCOUNT, { pageSize: 25 })
+              .pipe(
+                op.catchError(err => {
+                  if (err.code === 'ECONNREFUSED') {
+                    throw new Error(err.message)
+                  }
+                }),
+                op.mergeMap(_ => _),
+                op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
+                op.filter(tx => {
+                  return (
+                    tx.recipient.equals(recipientAddress) &&
+                    currentHeight.compact() - tx.transactionInfo.height.compact() < conf.WAIT_HEIGHT
+                  )
+                }),
+                op.toArray(),
+                op.map(txes => {
+                  if (txes.length > 0) {
+                    throw new Error(
+                      `Too many claiming. Please wait for ${conf.WAIT_HEIGHT} blocks.`
+                    )
+                  }
+                  return true
+                })
+              ),
+            accountHttp
+              .unconfirmedTransactions(conf.FAUCET_ACCOUNT, { pageSize: 25 })
+              .pipe(
+                op.catchError(err => {
+                  if (err.code === 'ECONNREFUSED') {
+                    throw new Error(err.message)
+                  }
+                }),
+                op.mergeMap(_ => _),
+                op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
+                op.filter(tx => tx.recipient.equals(recipientAddress)),
+                op.toArray(),
+                op.map(txes => {
+                  if (txes.length > conf.MAX_UNCONFIRMED) {
+                    throw new Error(
+                      `Too many unconfirmed claiming. Please wait for blocks confirmed.`
+                    )
+                  }
+                  return true
+                })
+              )
+          ])
+        }),
+        op.mergeMap(results => {
+          const [mosaicInfo, , faucetOwned, outgoings, unconfirmed] = results
+
+          if (!(outgoings && unconfirmed)) {
+            throw new Error(
+              'Something wrong with outgoing or unconfirmed checking.'
+            )
+          }
+
+          // determine amount to pay out
+          const faucetBalance = faucetOwned.amount.compact()
+          const divisibility = mosaicInfo.divisibility
+          const txAbsoluteAmount =
+            sanitizeAmount(amount, divisibility, conf.OUT_MAX) ||
+            Math.min(faucetBalance, randomInRange(conf.OUT_MIN, conf.OUT_MAX, divisibility))
+          console.debug(`Faucet balance => %d`, faucetOwned.relativeAmount())
+          console.debug(`Mosaic divisibility => %d`, divisibility)
+          console.debug(`Input amount => %s`, amount)
+          console.debug(`Payout amount => %d`, txAbsoluteAmount)
+
+          const mosaic = new nem.Mosaic(
+            mosaicInfo.mosaicId,
+            nem.UInt64.fromUint(txAbsoluteAmount)
+          )
+          const transferTx = buildTransferTransaction(
+            recipientAddress,
+            mosaic,
+            buildMessage(message, req.body.encrypt, null)
+          )
+
+          const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx)
+          return transactionHttp.announce(signedTx).pipe(
+            op.mergeMap(response => {
+              return rx.of({
+                response,
+                txHash: signedTx.hash,
+                amount: txAbsoluteAmount / Math.pow(10, mosaicInfo.divisibility)
+              })
+            })
+          )
+        })
+      )
+      .subscribe(
+        result => {
+          const { txHash, amount } = result
+          res.json({ txHash, amount })
+        },
+        err => {
+          console.error(err)
+          res.status(422).json({ error: err.message })
+        }
+      )
+  }
 }
 
 function buildMessage(message, encrypt = false, publicAccount = null) {
@@ -225,21 +232,19 @@ const buildTransferTransaction = (address, transferrable, message) => {
     address,
     [transferrable],
     message,
-    nem.NetworkType[process.env.NEM_NETWORK]
+    address.networkType
   )
 }
 
-const requestReCaptchaValidation = async response => {
-  const body = qs.stringify({
-    secret: process.env.RECAPTCHA_SERVER_SECRET,
-    response
-  })
+const requestReCaptchaValidation = async (response, secret, endpoint) => {
+  const body = qs.stringify({ response, secret })
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded'
   }
   const result = await axios
-    .post(GOOGLE_RECAPTCHA_ENDPOINT, body, { headers })
+    .post(endpoint, body, { headers })
     .catch(err => err.response)
+  console.debug(result)
   return result.status === 200 && result.data.success
 }
 
@@ -248,10 +253,10 @@ const randomInRange = (from, to, base) => {
   return base ? Math.round(value / 10 ** base) * 10 ** base : value
 }
 
-const sanitizeAmount = (amount, base) => {
+const sanitizeAmount = (amount, base, max) => {
   const absoluteAmount = parseFloat(amount) * Math.pow(10, base)
-  if (absoluteAmount > OUT_MAX) {
-    return OUT_MAX
+  if (absoluteAmount > max) {
+    return max
   } else if (absoluteAmount <= 0) {
     return 0
   } else {

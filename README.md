@@ -13,7 +13,7 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/nem2-faucet:alpaca
+$ docker pull 44uk/nem2-faucet:cow
 ```
 
 ### Add as service
@@ -23,7 +23,7 @@ $ docker pull 44uk/nem2-faucet:alpaca
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
-  image: 44uk/nem2-faucet:alpaca
+  image: 44uk/nem2-faucet:cow
   stop_signal: SIGINT
   command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
   environment:
@@ -42,7 +42,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:alpaca
+  image: 44uk/nem2-faucet:cow
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -59,7 +59,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:alpaca
+  image: 44uk/nem2-faucet:cow
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -94,7 +94,8 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # * NEM_PRIVATE_KEY
 # * NEM_API_URL
 # * NEM_PUBLIC_URL
-# * NEM_MOSAIC_FQN (default: nem:xem)
+# * NEM_MOSAIC_FQN (default: cat:currency)
+# * NEM_MOSAIC_HEX (for not linked mosaic)
 # * NEM_OUT_MAX
 # * NEM_OUT_MIN
 # * NEM_OUT_OPT
