@@ -135,6 +135,7 @@ export default {
         .post('/claims', { reCaptcha, ...this.form })
         .then(response => {
           this.info(`Send your declaration.`)
+          this.success(`Amount: ${response.data.amount} ${this.mosaicFqn}`)
           this.success(`Transaction Hash: ${response.data.txHash}`)
         })
         .catch(err => {

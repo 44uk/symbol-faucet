@@ -14,7 +14,6 @@ _.mixin({
 const GOOGLE_RECAPTCHA_ENDPOINT =
   'https://www.google.com/recaptcha/api/siteverify'
 const GOOGLE_RECAPTCHA_ENABLED = !_.isBlank(process.env.RECAPTCHA_SERVER_SECRET)
-
 const API_URL = process.env.NEM_API_URL
 const MOSAIC_FQN = process.env.NEM_MOSAIC_FQN || 'nem:xem'
 const OUT_MIN = parseInt(process.env.NEM_OUT_MIN)
@@ -184,7 +183,8 @@ const handler = async (req, res, next) => {
           op.mergeMap(response => {
             return rx.of({
               response,
-              hash: signedTx.hash
+              txHash: signedTx.hash,
+              amount: txAbsoluteAmount / Math.pow(10, mosaicInfo.divisibility)
             })
           })
         )
@@ -192,8 +192,8 @@ const handler = async (req, res, next) => {
     )
     .subscribe(
       result => {
-        const txHash = result.hash
-        res.json({ txHash })
+        const { txHash, amount } = result
+        res.json({ txHash, amount })
       },
       err => {
         console.error(err)
