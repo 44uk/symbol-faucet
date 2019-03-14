@@ -1,0 +1,10 @@
+.env*
+.git
+.gitignore
+.nuxt
+app.json
+Dockerfile
+README.md
+dist/
+node_modules/
+docs/
