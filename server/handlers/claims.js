@@ -44,7 +44,7 @@ const handler = async (req, res, next) => {
       _ => false
     )
     if (!reCaptchaResult) {
-      res.status(422).json({ error: 'Failed ReCaptcha.' })
+      return res.status(422).json({ error: 'Failed ReCaptcha.' })
     }
   }
 
