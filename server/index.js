@@ -9,6 +9,7 @@ app.use(bodyParser.json())
 
 require('dotenv').config({ path: '.env' })
 
+const monitor = require('./monitor')
 const bootstrap = require('./bootstrap')
 const faucetHandler = require('./handlers/faucet.js')(bootstrap.config)
 const claimsHandler = require('./handlers/claims.js')(bootstrap.config)
@@ -45,5 +46,8 @@ async function start() {
     message: `Server listening on http://${host}:${port}`,
     badge: true
   })
+
+  const { API_URL, FAUCET_ACCOUNT } = bootstrap.config
+  monitor(API_URL, FAUCET_ACCOUNT.address)
 }
 start()
