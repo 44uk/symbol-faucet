@@ -14,21 +14,29 @@ const faucetAccount = nem.Account.createFromPrivateKey(
   nem.NetworkType[process.env.NEM_NETWORK]
 )
 const accountHttp = new nem.AccountHttp(API_URL)
+const mosaicHttp = new nem.MosaicHttp(API_URL)
 const mosaicService = new nem.MosaicService(
   accountHttp,
-  new nem.MosaicHttp(API_URL),
+  mosaicHttp,
   new nem.NamespaceHttp(API_URL)
 )
 
-const handler = (req, res, next) => {
-  accountHttp
-    .getAccountInfo(faucetAccount.address)
+const handler = (_req, res, next) => {
+  mosaicHttp
+    .getMosaic(new nem.MosaicId(MOSAIC_FQN))
     .pipe(
-      op.mergeMap(account => {
-        return mosaicService.mosaicsAmountViewFromAddress(account.address).pipe(
-          op.mergeMap(_ => _),
-          op.find(mosaic => mosaic.fullName() === MOSAIC_FQN),
-          op.map(mosaic => ({ mosaic, account }))
+      op.mergeMap(distributionMosaicInfo => {
+        console.log(distributionMosaicInfo)
+        return accountHttp.getAccountInfo(faucetAccount.address).pipe(
+          op.mergeMap(account => {
+            return mosaicService
+              .mosaicsAmountViewFromAddress(account.address)
+              .pipe(
+                op.mergeMap(_ => _),
+                op.find(mosaic => mosaic.fullName() === MOSAIC_FQN),
+                op.map(mosaic => ({ mosaic, account }))
+              )
+          })
         )
       }),
       op.catchError(err => {
@@ -37,7 +45,7 @@ const handler = (req, res, next) => {
         }
         const res = JSON.parse(err.response.text)
         if (res.code === 'ResourceNotFound') {
-          throw new Error(res.message)
+          throw new Error(`${res.code}: ${res.message}`)
         } else {
           throw new Error('Something wrong with MosaicService response')
         }
