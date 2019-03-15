@@ -30,7 +30,11 @@
     "NEM_MOSAIC_FQN": {
       "value": "nem:xem",
       "required": false,
-      "description": "Serving mosaic FQN."
+      "description": "Distribution mosaic FQN."
+    },
+    "NEM_MOSAIC_HEX": {
+      "required": false,
+      "description": "For mosaic not linked with namespace"
     },
     "NEM_OUT_MIN": {
       "value": "1000000000"

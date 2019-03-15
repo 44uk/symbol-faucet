@@ -9,9 +9,16 @@ app.use(bodyParser.json())
 
 require('dotenv').config({ path: '.env' })
 
+const monitor = require('./monitor')
+const bootstrap = require('./bootstrap')
+const faucetHandler = require('./handlers/faucet.js')(bootstrap.config)
+const claimsHandler = require('./handlers/claims.js')(bootstrap.config)
+
 // Import and Set Nuxt.js options
 const config = require('../nuxt.config.js')
 config.dev = !(process.env.NODE_ENV === 'production')
+
+process.on('unhandledRejection', console.dir)
 
 async function start() {
   // Init Nuxt.js
@@ -27,9 +34,10 @@ async function start() {
     await nuxt.ready()
   }
 
+  app.get('/', faucetHandler)
+  app.post('/claims', claimsHandler)
+
   // Give nuxt middleware to express
-  app.post('/claims', require('./handlers/claims.js'))
-  app.get('/', require('./handlers/faucet.js'))
   app.use(nuxt.render)
 
   // Listen the server
@@ -38,5 +46,8 @@ async function start() {
     message: `Server listening on http://${host}:${port}`,
     badge: true
   })
+
+  const { API_URL, FAUCET_ACCOUNT } = bootstrap.config
+  monitor(API_URL, FAUCET_ACCOUNT.address)
 }
 start()

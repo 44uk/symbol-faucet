@@ -52,16 +52,15 @@ div
   Readme(
     :publicUrl="publicUrl"
     :network="network"
-    :mosaicFqn="mosaicFqn"
+    :mosaicId="mosaicId"
     :outMin="outMin"
     :outMax="outMax"
   )
 </template>
 
 <script>
-import qs from 'querystring'
-import Readme from '~/components/Readme'
 import axios from 'axios'
+import Readme from '~/components/Readme'
 
 export default {
   name: 'Home',
@@ -82,7 +81,7 @@ export default {
       network: null,
       apiUrl: null,
       publicUrl: null,
-      mosaicFqn: null,
+      mosaicId: null,
       outMin: null,
       outMax: null,
       outOpt: null,
@@ -121,8 +120,7 @@ export default {
       await this.$recaptcha.init()
     }
     if (process.browser) {
-      /* eslint nuxt/no-globals-in-created: 0 */
-      const params = qs.parse(window.location.search.substring(1))
+      const params = this.$nuxt.$route.query
       this.form.recipient = params.recipient
       this.form.amount = params.amount
       this.form.message = params.message
@@ -140,7 +138,7 @@ export default {
         .post('/claims', formData)
         .then(response => {
           this.info(`Send your declaration.`)
-          this.success(`Amount: ${response.data.amount} ${this.mosaicFqn}`)
+          this.success(`Amount: ${response.data.amount} ${this.mosaicId}`)
           this.success(`Transaction Hash: ${response.data.txHash}`)
         })
         .catch(err => {
