@@ -24,7 +24,8 @@ const handler = conf => {
     : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
 
   return async (req, res, next) => {
-    const { recipient, amount, message, reCaptcha } = req.body
+    const { recipient, amount, message, encryption, reCaptcha } = req.body
+
     if (conf.RECAPTCHA_ENABLED) {
       const reCaptchaResult = await requestReCaptchaValidation(
         reCaptcha,
@@ -53,11 +54,7 @@ const handler = conf => {
         op.mergeMap(([distributionMosaicId, currentHeight]) => {
           return rx.forkJoin([
             mosaicHttp.getMosaic(distributionMosaicId),
-            mosaicService.mosaicsAmountViewFromAddress(recipientAddress).pipe(
-              op.mergeMap(_ => _),
-              op.find(mosaicView =>
-                mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
-              ),
+            accountHttp.getAccountInfo(recipientAddress).pipe(
               op.catchError(err => {
                 if (err.code === 'ECONNREFUSED') {
                   throw new Error(err.message)
@@ -66,16 +63,34 @@ const handler = conf => {
                 if (response.code === 'ResourceNotFound') {
                   return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
                 } else {
-                  throw new Error('Something wrong with MosaicService response')
+                  throw new Error('Something wrong with response.')
                 }
               }),
-              op.map(mosaic => {
-                if (mosaic && mosaic.amount.compact() > conf.ENOUGH_BALANCE) {
-                  throw new Error(
-                    `Your account already has enough balance => (${mosaic.relativeAmount()})`
-                  )
+              op.mergeMap(account => {
+                if (!account) {
+                  return rx.of(account)
                 }
-                return mosaic
+                return mosaicService
+                  .mosaicsAmountViewFromAddress(recipientAddress)
+                  .pipe(
+                    op.mergeMap(_ => _),
+                    op.find(mosaicView =>
+                      mosaicView.mosaicInfo.mosaicId.equals(
+                        distributionMosaicId
+                      )
+                    ),
+                    op.map(mosaicView => {
+                      if (
+                        mosaicView &&
+                        mosaicView.amount.compact() > conf.ENOUGH_BALANCE
+                      ) {
+                        throw new Error(
+                          `Your account already has enough balance => (${mosaicView.relativeAmount()})`
+                        )
+                      }
+                      return account
+                    })
+                  )
               })
             ),
             mosaicService
@@ -155,7 +170,7 @@ const handler = conf => {
           ])
         }),
         op.mergeMap(results => {
-          const [mosaicInfo, , faucetOwned, outgoings, unconfirmed] = results
+          const [mosaicInfo, recipientAccount, faucetOwned, outgoings, unconfirmed] = results
 
           if (!(outgoings && unconfirmed)) {
             throw new Error(
@@ -181,7 +196,7 @@ const handler = conf => {
           const transferTx = buildTransferTransaction(
             recipientAddress,
             mosaic,
-            buildMessage(message, req.body.encrypt, null)
+            buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount)
           )
 
           const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx)
@@ -209,14 +224,14 @@ const handler = conf => {
   }
 }
 
-function buildMessage(message, encrypt = false, publicAccount = null) {
-  if (encrypt && publicAccount === null) {
-    throw new Error('Public Key required to encrypt message.')
+function buildMessage(message, encryption = false, faucetAccount, publicAccount = null) {
+  console.log(faucetAccount)
+  if (encryption && publicAccount === null) {
+    throw new Error('Required recipient public key exposed to encrypt message.')
   }
-  if (encrypt) {
-    // TODO: nem2-sdk does not have EncryptMessage yet.
-    console.debug('Encrypted message => %s', message)
-    throw new Error('Encrypt message not supported.')
+  if (encryption) {
+    console.debug('Encrypt message => %s', message)
+    return faucetAccount.encryptMessage(message, publicAccount)
   } else if (_.isBlank(message)) {
     console.debug('Empty message')
     return nem.EmptyMessage

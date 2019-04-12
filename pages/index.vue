@@ -37,9 +37,15 @@ div
                 :disabled="drained"
               )
           .column.is-4
-            b-field(label="Submit")
-              button(type="submit" class="button is-primary is-fullwidth" :disabled="drained || waiting")
-                span CLAIM!
+            .columns.is-mobile
+              .column.is-6
+                b-field(label="Encryption")
+                  b-switch(v-model="form.encryption" style="margin-top:5px")
+                  | {{ form.encryption ? 'Encrypted' : 'Plain' }}
+              .column.is-6
+                b-field(label="Submit")
+                  button(type="submit" class="button is-primary is-fullwidth" :disabled="drained || waiting")
+                    span CLAIM!
 
         .columns
           .column.is-8
@@ -72,9 +78,8 @@ export default {
       form: {
         recipient: null,
         message: null,
-        amount: null
-        // encrypted: false,
-        // asMosaic: false
+        amount: null,
+        encryption: false
       },
       drained: true,
       waiting: false,
@@ -124,6 +129,7 @@ export default {
       this.form.recipient = params.recipient
       this.form.amount = params.amount
       this.form.message = params.message
+      this.form.encryption = params.encryption
     }
   },
   methods: {
