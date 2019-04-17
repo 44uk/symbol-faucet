@@ -1,6 +1,6 @@
 {
   "name": "nem2-faucet",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "NEM2 faucet web application",
   "author": "Yoshiyuki Ieyama",
   "homepage": "https://github.com/44uk/nem2-faucet",
