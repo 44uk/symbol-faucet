@@ -224,17 +224,16 @@ const handler = conf => {
   }
 }
 
-function buildMessage(message, encryption = false, faucetAccount, publicAccount = null) {
-  console.log(faucetAccount)
+function buildMessage(message = '', encryption = false, faucetAccount, publicAccount = null) {
   if (encryption && publicAccount === null) {
     throw new Error('Required recipient public key exposed to encrypt message.')
   }
-  if (encryption) {
-    console.debug('Encrypt message => %s', message)
-    return faucetAccount.encryptMessage(message, publicAccount)
-  } else if (_.isBlank(message)) {
+  if (_.isBlank(message)) {
     console.debug('Empty message')
     return nem.EmptyMessage
+  } else if (encryption) {
+    console.debug('Encrypt message => %s', message)
+    return faucetAccount.encryptMessage(message, publicAccount)
   } else {
     console.debug('Plain message => %s', message)
     return nem.PlainMessage.create(message)
