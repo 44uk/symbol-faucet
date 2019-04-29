@@ -4,7 +4,7 @@ nav.navbar.header.is-dark.has-shadow(role="navigation" aria-label="main navigati
     .navbar-item
       img(class="nem-logo" src="~/assets/images/nem_logo.svg" alt="NEM2 Faucet" width="16" height="16")
       | &ensp;
-      span(style="font-weight:bold") NEM Faucet
+      span(style="font-weight:bold") NEM2 Faucet
 </template>
 
 <style lang="stylus">
