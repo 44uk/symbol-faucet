@@ -212,10 +212,7 @@ const handler = conf => {
         })
       )
       .subscribe(
-        result => {
-          const { txHash, amount } = result
-          res.json({ txHash, amount })
-        },
+        result => res.json(result),
         err => {
           console.error(err)
           res.status(422).json({ error: err.message })
