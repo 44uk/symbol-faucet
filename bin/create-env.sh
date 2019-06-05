@@ -1,5 +1,4 @@
 #!/bin/sh
-sleep 3
 
 # get nemesis private key from generated addresses
 FILEPATH=/addresses/addresses.yaml

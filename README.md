@@ -25,7 +25,7 @@ faucet:
   # image: my-nem2-faucet # in case of built image
   image: 44uk/nem2-faucet:dragon
   stop_signal: SIGINT
-  command: sh -c "/bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
+  command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
     - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
