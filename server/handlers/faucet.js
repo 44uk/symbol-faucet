@@ -34,11 +34,15 @@ const handler = conf => {
           if (err.code === 'ECONNREFUSED') {
             throw new Error(err.message)
           }
-          const res = JSON.parse(err.response.text)
-          if (res.code === 'ResourceNotFound') {
-            throw new Error(`${res.code}: ${res.message}`)
+          if (err.response) {
+            const res = JSON.parse(err.response.text)
+            if (res.code === 'ResourceNotFound') {
+              throw new Error(`${res.code}: ${res.message}`)
+            } else {
+              throw new Error('Something wrong with MosaicService response')
+            }
           } else {
-            throw new Error('Something wrong with MosaicService response')
+            throw new Error(err)
           }
         })
       )

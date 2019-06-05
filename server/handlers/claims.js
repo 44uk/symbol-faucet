@@ -12,7 +12,7 @@ _.mixin({
 })
 
 const handler = conf => {
-  const blockchainHttp = new nem.BlockchainHttp(conf.API_URL)
+  const chainHttp = new nem.ChainHttp(conf.API_URL)
   const transactionHttp = new nem.TransactionHttp(conf.API_URL)
   const accountHttp = new nem.AccountHttp(conf.API_URL)
   const namespaceHttp = new nem.NamespaceHttp(conf.API_URL)
@@ -44,7 +44,7 @@ const handler = conf => {
 
     rx.forkJoin([
       distributionMosaicIdObservable,
-      blockchainHttp.getBlockchainHeight()
+      chainHttp.getBlockchainHeight()
     ])
       .pipe(
         op.tap(([distributionMosaicId, currentHeight]) => {
@@ -199,7 +199,8 @@ const handler = conf => {
             buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount)
           )
 
-          const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx)
+          const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx, conf.GENERATION_HASH)
+          console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)
           return transactionHttp.announce(signedTx).pipe(
             op.mergeMap(response => {
               return rx.of({

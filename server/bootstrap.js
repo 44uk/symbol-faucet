@@ -1,9 +1,9 @@
-const _ = require('lodash')
 const nem = require('nem2-sdk')
 
 const API_URL = process.env.NEM_API_URL || 'http://localhost:3000'
 const PUBLIC_URL = process.env.NEM_PUBLIC_URL || API_URL
 const NETWORK = process.env.NEM_NETWORK
+const GENERATION_HASH = process.env.NEM_GENERATION_HASH
 const MOSAIC_FQN = process.env.NEM_MOSAIC_FQN
 const MOSAIC_HEX = process.env.NEM_MOSAIC_HEX
 const MOSAIC_ID = MOSAIC_FQN || MOSAIC_HEX || 'cat.currency'
@@ -24,16 +24,17 @@ const FAUCET_ACCOUNT = nem.Account.createFromPrivateKey(
 )
 
 const config = {
+  FAUCET_ACCOUNT,
   API_URL,
   PUBLIC_URL,
   NETWORK,
+  GENERATION_HASH,
   MOSAIC_FQN,
   MOSAIC_HEX,
   MOSAIC_ID,
   OUT_MIN,
   OUT_MAX,
   OUT_OPT,
-  FAUCET_ACCOUNT,
   ENOUGH_BALANCE,
   WAIT_HEIGHT,
   MAX_UNCONFIRMED,
