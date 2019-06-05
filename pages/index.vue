@@ -65,7 +65,6 @@ div
 </template>
 
 <script>
-import axios from 'axios'
 import Readme from '~/components/Readme'
 
 export default {
@@ -140,15 +139,14 @@ export default {
       if (this.$recaptcha) {
         formData.reCaptcha = await this.$recaptcha.execute('login')
       }
-      axios
-        .post('/claims', formData)
+      this.$axios
+        .$post('/claims', formData)
         .then(response => {
           this.info(`Send your declaration.`)
-          this.success(`Amount: ${response.data.amount} ${this.mosaicId}`)
-          this.success(`Transaction Hash: ${response.data.txHash}`)
+          this.success(`Amount: ${response.amount} ${this.mosaicId}`)
+          this.success(`Transaction Hash: ${response.txHash}`)
         })
         .catch(err => {
-          console.debug(err.message)
           const msg =
             (err.response.data && err.response.data.error) ||
             err.response.statusTest
