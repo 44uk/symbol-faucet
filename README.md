@@ -95,8 +95,8 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # set enviroment variables
 # * PORT (default: 4000)
 # * NEM_NETWORK (default: MIJIN_TEST)
-# * NEM_PRIVATE_KEY
-# * NEM_GENERATION_HASH
+# * NEM_PRIVATE_KEY (required)
+# * NEM_GENERATION_HASH (required)
 # * NEM_API_URL
 # * NEM_PUBLIC_URL
 # * NEM_MOSAIC_FQN (default: cat:currency)
