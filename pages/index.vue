@@ -65,10 +65,6 @@ div
 </template>
 
 <script>
-<<<<<<< HEAD
-import axios from 'axios'
-=======
->>>>>>> upstream/master
 import Readme from '~/components/Readme'
 
 export default {
@@ -147,13 +143,8 @@ export default {
         .$post('/claims', formData)
         .then(response => {
           this.info(`Send your declaration.`)
-<<<<<<< HEAD
-          this.success(`Amount: ${response.data.amount} ${this.mosaicId}`)
-          this.success(`Transaction Hash: ${response.data.txHash}`)
-=======
           this.success(`Amount: ${response.amount} ${this.mosaicId}`)
           this.success(`Transaction Hash: ${response.txHash}`)
->>>>>>> upstream/master
         })
         .catch(err => {
           const msg =

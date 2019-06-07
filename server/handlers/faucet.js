@@ -8,29 +8,6 @@ const handler = conf => {
   const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
   const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
 
-<<<<<<< HEAD
-  const distributionMosaicIdPromise = conf.MOSAIC_HEX
-    ? Promise.resolve(new nem.MosaicId(conf.MOSAIC_ID))
-    : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID)).toPromise()
-
-  return async (_req, res, next) => {
-    const distributionMosaicId = await distributionMosaicIdPromise
-    console.debug('Distribution Mosaic', distributionMosaicId.toHex())
-
-    accountHttp
-      .getAccountInfo(conf.FAUCET_ACCOUNT.address)
-      .pipe(
-        op.mergeMap(account => {
-          return mosaicService
-            .mosaicsAmountViewFromAddress(account.address)
-            .pipe(
-              op.mergeMap(_ => _),
-              op.find(mosaicView =>
-                mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
-              ),
-              op.map(mosaicView => ({ mosaicView, account }))
-            )
-=======
   const distributionMosaicIdObservable = conf.MOSAIC_HEX
     ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
     : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
@@ -52,19 +29,11 @@ const handler = conf => {
                 )
             })
           )
->>>>>>> upstream/master
         }),
         op.catchError(err => {
           if (err.code === 'ECONNREFUSED') {
             throw new Error(err.message)
           }
-<<<<<<< HEAD
-          const res = JSON.parse(err.response.text)
-          if (res.code === 'ResourceNotFound') {
-            throw new Error(res.message)
-          } else {
-            throw new Error('Something wrong with MosaicService response')
-=======
           if (err.response) {
             const res = JSON.parse(err.response.text)
             if (res.code === 'ResourceNotFound') {
@@ -74,7 +43,6 @@ const handler = conf => {
             }
           } else {
             throw new Error(err)
->>>>>>> upstream/master
           }
         })
       )

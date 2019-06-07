@@ -13,11 +13,7 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
-<<<<<<< HEAD
-$ docker pull 44uk/nem2-faucet:cow
-=======
 $ docker pull 44uk/nem2-faucet:dragon
->>>>>>> upstream/master
 ```
 
 ### Add as service
@@ -27,11 +23,7 @@ $ docker pull 44uk/nem2-faucet:dragon
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
-<<<<<<< HEAD
-  image: 44uk/nem2-faucet:cow
-=======
   image: 44uk/nem2-faucet:dragon
->>>>>>> upstream/master
   stop_signal: SIGINT
   command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
@@ -52,11 +44,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-<<<<<<< HEAD
-  image: 44uk/nem2-faucet:cow
-=======
   image: 44uk/nem2-faucet:dragon
->>>>>>> upstream/master
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -74,11 +62,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-<<<<<<< HEAD
-  image: 44uk/nem2-faucet:cow
-=======
   image: 44uk/nem2-faucet:dragon
->>>>>>> upstream/master
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST

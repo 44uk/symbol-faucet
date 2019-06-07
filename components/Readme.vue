@@ -10,22 +10,14 @@ section.section
           a(:href="publicUrl" target="_blank"): strong {{publicUrl}}
           | .
         li You can get&nbsp;
-<<<<<<< HEAD
-          strong "{{mosaicId}}"
-=======
           strong "{{mosaicId | prefix0x}}"
->>>>>>> upstream/master
           | &nbsp;randomly from&nbsp;
           strong {{outMin}}
           | &nbsp;to&nbsp;
           strong {{outMax}}
           |.
         li Please send back&nbsp;
-<<<<<<< HEAD
-          strong "{{mosaicId}}"
-=======
           strong "{{mosaicId | prefix0x}}"
->>>>>>> upstream/master
           | &nbsp;when you no longer need.
         li This is an experimental server, the spec can be change without notice.
         li Good luck! NEM development!
