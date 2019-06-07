@@ -37,9 +37,15 @@ div
                 :disabled="drained"
               )
           .column.is-4
-            b-field(label="Submit")
-              button(type="submit" class="button is-primary is-fullwidth" :disabled="drained || waiting")
-                span CLAIM!
+            .columns.is-mobile
+              .column.is-6
+                b-field(label="Encryption")
+                  b-switch(v-model="form.encryption" style="margin-top:5px")
+                  | {{ form.encryption ? 'Encrypted' : 'Plain' }}
+              .column.is-6
+                b-field(label="Submit")
+                  button(type="submit" class="button is-primary is-fullwidth" :disabled="drained || waiting")
+                    span CLAIM!
 
         .columns
           .column.is-8
@@ -59,7 +65,10 @@ div
 </template>
 
 <script>
+<<<<<<< HEAD
 import axios from 'axios'
+=======
+>>>>>>> upstream/master
 import Readme from '~/components/Readme'
 
 export default {
@@ -72,9 +81,8 @@ export default {
       form: {
         recipient: null,
         message: null,
-        amount: null
-        // encrypted: false,
-        // asMosaic: false
+        amount: null,
+        encryption: false
       },
       drained: true,
       waiting: false,
@@ -124,6 +132,7 @@ export default {
       this.form.recipient = params.recipient
       this.form.amount = params.amount
       this.form.message = params.message
+      this.form.encryption = params.encryption
     }
   },
   methods: {
@@ -134,15 +143,19 @@ export default {
       if (this.$recaptcha) {
         formData.reCaptcha = await this.$recaptcha.execute('login')
       }
-      axios
-        .post('/claims', formData)
+      this.$axios
+        .$post('/claims', formData)
         .then(response => {
           this.info(`Send your declaration.`)
+<<<<<<< HEAD
           this.success(`Amount: ${response.data.amount} ${this.mosaicId}`)
           this.success(`Transaction Hash: ${response.data.txHash}`)
+=======
+          this.success(`Amount: ${response.amount} ${this.mosaicId}`)
+          this.success(`Transaction Hash: ${response.txHash}`)
+>>>>>>> upstream/master
         })
         .catch(err => {
-          console.debug(err.message)
           const msg =
             (err.response.data && err.response.data.error) ||
             err.response.statusTest

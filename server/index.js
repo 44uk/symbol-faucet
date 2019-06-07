@@ -18,6 +18,8 @@ const claimsHandler = require('./handlers/claims.js')(bootstrap.config)
 const config = require('../nuxt.config.js')
 config.dev = !(process.env.NODE_ENV === 'production')
 
+process.on('unhandledRejection', console.dir)
+
 async function start() {
   // Init Nuxt.js
   const nuxt = new Nuxt(config)

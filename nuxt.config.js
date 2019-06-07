@@ -56,7 +56,8 @@ module.exports = {
    ** Axios module configuration
    */
   axios: {
-    // See https://github.com/nuxt-community/axios-module#options
+    host: process.env.HOST || '0.0.0.0',
+    port: process.env.PORT || 4000
   },
 
   recaptcha: {

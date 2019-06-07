@@ -13,42 +13,57 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
+<<<<<<< HEAD
 $ docker pull 44uk/nem2-faucet:cow
+=======
+$ docker pull 44uk/nem2-faucet:dragon
+>>>>>>> upstream/master
 ```
 
 ### Add as service
 
-#### (Quickest) Using nemesis Private Key example
+#### (Quickest way) Using nemesis Private Key example
 
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
+<<<<<<< HEAD
   image: 44uk/nem2-faucet:cow
+=======
+  image: 44uk/nem2-faucet:dragon
+>>>>>>> upstream/master
   stop_signal: SIGINT
-  command: sh -c "/bin/sh /app/bin/create-env-from-generated-address.sh && /usr/local/bin/npm start"
+  command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
     - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
-    - ./build/generated-addresses:/addresses:rw
+    - ./build/generated-addresses:/addresses:ro
+    - ./data/peer-node-0/00000:/data/00000:ro
   ports:
     - '4000:4000'
   depends_on:
     - rest-gateway
+    - peer-node-0-nemgen
 ```
 
-#### Using specific PrivateKey example
+#### Using specific PrivateKey
 
 ```yaml:docker-compose.yml
 faucet:
+<<<<<<< HEAD
   image: 44uk/nem2-faucet:cow
+=======
+  image: 44uk/nem2-faucet:dragon
+>>>>>>> upstream/master
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
     - NEM_PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
+    - NEM_GENERATION_HASH=__YOUR_NETWORK_GENERATION_HASH__
   ports:
     - '4000:4000'
   depends_on:
@@ -59,7 +74,11 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
+<<<<<<< HEAD
   image: 44uk/nem2-faucet:cow
+=======
+  image: 44uk/nem2-faucet:dragon
+>>>>>>> upstream/master
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -67,6 +86,7 @@ faucet:
     - NEM_PUBLIC_URL=http://localhost:3000
     - NEM_MOSAIC_FQN=jpn:jpy
     - NEM_PRIVATE_KEY=__YOUR_PRIVATE_KEY__
+    - NEM_GENERATION_HASH=__YOUR_NETWORK_GENERATION_HASH__
   ports:
     - '4000:4000'
   depends_on:
@@ -91,7 +111,8 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # set enviroment variables
 # * PORT (default: 4000)
 # * NEM_NETWORK (default: MIJIN_TEST)
-# * NEM_PRIVATE_KEY
+# * NEM_PRIVATE_KEY (required)
+# * NEM_GENERATION_HASH (required)
 # * NEM_API_URL
 # * NEM_PUBLIC_URL
 # * NEM_MOSAIC_FQN (default: cat:currency)
