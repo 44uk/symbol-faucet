@@ -6,7 +6,7 @@
   "homepage": "https://github.com/44uk/nem2-faucet",
   "private": true,
   "engines": {
-    "node": ">=8.9.0"
+    "node": "8.11.1"
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon server/index.js --watch server",
