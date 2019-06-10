@@ -61,22 +61,20 @@ const handler = conf => {
           const denominator = Math.pow(10, mosaicView.mosaicInfo.divisibility)
           const balance = mosaicView.amount.compact()
           const drained = balance < conf.OUT_MAX
-          const data = {
-            attributes: {
-              drained: drained,
-              network: conf.NETWORK,
-              apiUrl: conf.API_URL,
-              publicUrl: conf.PUBLIC_URL || conf.API_URL,
-              mosaicId: conf.MOSAIC_ID,
-              outMax: conf.OUT_MAX / denominator,
-              outMin: conf.OUT_MIN / denominator,
-              outOpt: conf.OUT_OPT / denominator,
-              step: 1 / denominator,
-              address: account.address.pretty(),
-              balance: balance / denominator
-            }
+          const attributes = {
+            drained: drained,
+            network: conf.NETWORK,
+            apiUrl: conf.API_URL,
+            publicUrl: conf.PUBLIC_URL || conf.API_URL,
+            mosaicId: conf.MOSAIC_ID,
+            outMax: conf.OUT_MAX / denominator,
+            outMin: conf.OUT_MIN / denominator,
+            outOpt: conf.OUT_OPT / denominator,
+            step: 1 / denominator,
+            address: account.address.pretty(),
+            balance: balance / denominator
           }
-          res.data = { data }
+          res.data = { attributes }
           return next()
         },
         err => {

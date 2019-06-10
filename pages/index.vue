@@ -66,6 +66,7 @@ div
 
 <script>
 import Readme from '~/components/Readme'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'Home',
@@ -97,19 +98,22 @@ export default {
       amountPlaceholder: null
     }
   },
-  asyncData({ res, error }) {
-    if (res.data.error) {
-      return error(res.data.error)
+  computed: {
+    ...mapGetters(['attributes', 'transactions'])
+  },
+  asyncData({ res, store, error }) {
+    let attrs = store.getters.attributes
+    if (res && res.data) {
+      if (res.data.error) {
+        return error(res.data.error)
+      }
+      attrs = { ...attrs, ...res.data.attributes }
+      store.dispatch('setAttributes', { attributes: attrs })
     }
-    const attrs = res.data.data.attributes
     const firstChar = attrs.address[0]
     const recipientPattern = `^${firstChar}[ABCD].+`
-    const recipientPlaceholder = `${
-      attrs.network
-    } address start with a capital ${firstChar}`
-    const amountPlaceholder = `(Up to ${
-      attrs.outOpt
-    }. Optional, if you want fixed amount)`
+    const recipientPlaceholder = `${attrs.network} address start with a capital ${firstChar}`
+    const amountPlaceholder = `(Up to ${attrs.outOpt}. Optional, if you want fixed amount)`
     const data = {
       ...attrs,
       recipientPattern,
@@ -132,6 +136,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['setConfig', 'addTransaction']),
     async claim() {
       this.waiting = true
       this.$router.push({ path: this.$route.path, query: this.form })
@@ -145,6 +150,13 @@ export default {
           this.info(`Send your declaration.`)
           this.success(`Amount: ${response.amount} ${this.mosaicId}`)
           this.success(`Transaction Hash: ${response.txHash}`)
+          const transaction = {
+            hash: response.txHash,
+            mosaicId: this.mosaicId,
+            amount: response.amount,
+            recipient: formData.recipient
+          }
+          this.addTransaction({ transaction })
         })
         .catch(err => {
           const msg =
