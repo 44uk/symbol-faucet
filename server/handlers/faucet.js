@@ -3,19 +3,24 @@ const op = require('rxjs/operators')
 const nem = require('nem2-sdk')
 
 const handler = conf => {
+  const blockHttp = new nem.BlockHttp(conf.API_URL)
   const accountHttp = new nem.AccountHttp(conf.API_URL)
   const namespaceHttp = new nem.NamespaceHttp(conf.API_URL)
   const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
   const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
 
+  const nemesisBlockObservable = conf.GENERATION_HASH
+    ? rx.of({ generationHash: conf.GENERATION_HASH })
+    : blockHttp.getBlockByHeight(1)
   const distributionMosaicIdObservable = conf.MOSAIC_HEX
     ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
     : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
 
   return (_req, res, next) => {
-    distributionMosaicIdObservable
+    rx.forkJoin([nemesisBlockObservable, distributionMosaicIdObservable])
       .pipe(
-        op.mergeMap(distributionMosaicId => {
+        op.mergeMap(results => {
+          const [nemesisBlock, distributionMosaicId] = results
           return accountHttp.getAccountInfo(conf.FAUCET_ACCOUNT.address).pipe(
             op.mergeMap(account => {
               return mosaicService
@@ -25,7 +30,7 @@ const handler = conf => {
                   op.find(mosaicView =>
                     mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
                   ),
-                  op.map(mosaicView => ({ mosaicView, account }))
+                  op.map(mosaicView => ({ mosaicView, account, nemesisBlock }))
                 )
             })
           )
@@ -48,7 +53,11 @@ const handler = conf => {
       )
       .subscribe(
         info => {
-          const { mosaicView, account } = info
+          const { mosaicView, account, nemesisBlock } = info
+          if (!conf.GENERATION_HASH) {
+            console.log('Set generation hash from /block/1')
+            conf.GENERATION_HASH = nemesisBlock.generationHash
+          }
           const denominator = Math.pow(10, mosaicView.mosaicInfo.divisibility)
           const balance = mosaicView.amount.compact()
           const drained = balance < conf.OUT_MAX
