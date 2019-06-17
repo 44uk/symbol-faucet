@@ -59,8 +59,7 @@ const handler = conf => {
                 if (err.code === 'ECONNREFUSED') {
                   throw new Error(err.message)
                 }
-                const response = JSON.parse(err.response.text)
-                if (response.code === 'ResourceNotFound') {
+                if (err.statusCode === 404) {
                   return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
                 } else {
                   throw new Error('Something wrong with response.')
@@ -104,8 +103,7 @@ const handler = conf => {
                   if (err.code === 'ECONNREFUSED') {
                     throw new Error(err.message)
                   }
-                  const response = JSON.parse(err.response.text)
-                  if (response.code === 'ResourceNotFound') {
+                  if (err.statusCode === 404) {
                     return rx.of(null)
                   } else {
                     throw new Error(

@@ -15,7 +15,13 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'Transactions',
   computed: {
-    ...mapGetters(['transactions'])
+    ...mapGetters(['attributes', 'transactions'])
+  },
+  asyncData({ res, store, error }) {
+    const attrs = store.getters.attributes
+    const data = { ...attrs }
+    console.debug('asyncData: %o', data)
+    return data
   }
 }
 </script>
