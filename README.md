@@ -23,7 +23,7 @@ $ docker pull 44uk/nem2-faucet:dragon
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
-  image: 44uk/nem2-faucet:dragon
+  image: 44uk/nem2-faucet:elephant
   stop_signal: SIGINT
   command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
@@ -31,8 +31,8 @@ faucet:
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
-    - ./build/generated-addresses:/addresses:ro
-    - ./data/peer-node-0/00000:/data/00000:ro
+    - ../../build/generated-addresses:/addresses:ro
+    - ../../data/peer-node-0/00000:/data/00000:ro
   ports:
     - '4000:4000'
   depends_on:
@@ -44,7 +44,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:dragon
+  image: 44uk/nem2-faucet:elephant
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
@@ -62,7 +62,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:dragon
+  image: 44uk/nem2-faucet:elephant
   stop_signal: SIGINT
   environment:
     - NEM_NETWORK=MIJIN_TEST
