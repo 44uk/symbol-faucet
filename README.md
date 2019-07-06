@@ -13,7 +13,7 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/nem2-faucet:dragon
+$ docker pull 44uk/nem2-faucet:elephant
 ```
 
 ### Add as service
