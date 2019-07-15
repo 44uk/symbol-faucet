@@ -50,6 +50,7 @@ module.exports = {
    ** Axios module configuration
    */
   axios: {
+    baseURL: '/',
     host: process.env.HOST || '0.0.0.0',
     port: process.env.PORT || 4000
   },
