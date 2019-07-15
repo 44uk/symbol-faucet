@@ -21,6 +21,7 @@
       "description": "PrivateKey of Faucet Account that you want to assign."
     },
     "NEM_GENERATION_HASH": {
+      "required": false,
       "value": "",
       "description": "Nemesis block hash."
     },
