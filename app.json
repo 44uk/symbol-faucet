@@ -13,11 +13,16 @@
       "value": "80"
     },
     "NEM_NETWORK": {
-      "value": "MIJIN_TEST"
+      "value": "MIJIN_TEST",
+      "description": "MAIN_NET, TEST_NET, MIJIN, MIJIN_TEST"
     },
     "NEM_PRIVATE_KEY": {
       "value": "__SET_YOUR_KEY__",
       "description": "PrivateKey of Faucet Account that you want to assign."
+    },
+    "NEM_GENERATION_HASH": {
+      "value": "",
+      "description": "Nemesis block hash."
     },
     "NEM_API_URL": {
       "value": "http://catapult-api.example.com:3000",
@@ -28,19 +33,19 @@
       "description": "For link url."
     },
     "NEM_MOSAIC_FQN": {
-      "value": "nem:xem",
+      "value": "cat.currency",
       "required": false,
-      "description": "Distribution mosaic FQN."
+      "description": "Distribution mosaic that linked namespace."
     },
     "NEM_MOSAIC_HEX": {
       "required": false,
-      "description": "For mosaic not linked with namespace"
+      "description": "Distribution mosaicId."
     },
     "NEM_OUT_MIN": {
-      "value": "1000000000"
+      "value": "200000000"
     },
     "NEM_OUT_MAX": {
-      "value": "5000000000"
+      "value": "500000000"
     },
     "NEM_OUT_OPT": {
       "required": false
