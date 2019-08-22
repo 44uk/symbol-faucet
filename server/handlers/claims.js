@@ -196,6 +196,7 @@ const handler = conf => {
             mosaic,
             buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount)
           )
+          transferTx.maxFee = nem.UInt64.fromUint(conf.MAX_FEE)
 
           const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx, conf.GENERATION_HASH)
           console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)

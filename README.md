@@ -104,6 +104,7 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # * NEM_OUT_MAX
 # * NEM_OUT_MIN
 # * NEM_OUT_OPT
+# * NEM_MAX_FEE
 # * NEM_ENOUGH_BALANCE
 # * NEM_MAX_UNCONFIRMED
 # * NEM_WAIT_HEIGHT
