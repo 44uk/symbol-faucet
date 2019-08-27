@@ -65,8 +65,8 @@ div
 </template>
 
 <script>
-import Readme from '~/components/Readme'
 import { mapActions, mapGetters } from 'vuex'
+import Readme from '~/components/Readme'
 
 export default {
   name: 'Home',
