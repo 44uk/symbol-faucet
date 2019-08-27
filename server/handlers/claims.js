@@ -191,8 +191,10 @@ const handler = conf => {
             mosaicInfo.mosaicId,
             nem.UInt64.fromUint(txAbsoluteAmount)
           )
+
           const transferTx = buildTransferTransaction(
             recipientAddress,
+            conf.MAX_TRANSACTION_DEADLINE,
             mosaic,
             buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount)
           )
@@ -237,9 +239,9 @@ function buildMessage(message = '', encryption = false, faucetAccount, publicAcc
   }
 }
 
-const buildTransferTransaction = (address, transferrable, message) => {
+const buildTransferTransaction = (address, deadline, transferrable, message) => {
   return nem.TransferTransaction.create(
-    nem.Deadline.create(conf.MAX_TRANSACTION_DEADLINE, jsJoda.ChronoUnit.MINUTES),
+    nem.Deadline.create(deadline, jsJoda.ChronoUnit.MINUTES),
     address,
     [transferrable],
     message,
