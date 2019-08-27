@@ -239,7 +239,7 @@ function buildMessage(message = '', encryption = false, faucetAccount, publicAcc
 
 const buildTransferTransaction = (address, transferrable, message) => {
   return nem.TransferTransaction.create(
-    nem.Deadline.create(1439, jsJoda.ChronoUnit.MINUTES),
+    nem.Deadline.create(conf.MAX_TRANSACTION_DEADLINE, jsJoda.ChronoUnit.MINUTES),
     address,
     [transferrable],
     message,
