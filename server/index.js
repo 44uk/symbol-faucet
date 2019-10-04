@@ -9,14 +9,14 @@ app.use(bodyParser.json())
 
 require('dotenv').config({ path: '.env' })
 
-const monitor = require('./monitor')
-const bootstrap = require('./bootstrap')
-const faucetHandler = require('./handlers/faucet.js')(bootstrap.config)
-const claimsHandler = require('./handlers/claims.js')(bootstrap.config)
-
 // Import and Set Nuxt.js options
 const config = require('../nuxt.config.js')
 config.dev = !(process.env.NODE_ENV === 'production')
+
+const monitor = require('./monitor')
+const bootstrap = require('./bootstrap')
+const faucetHandler = require('./handlers/faucet.js')
+const claimsHandler = require('./handlers/claims.js')
 
 process.on('unhandledRejection', console.dir)
 
@@ -34,8 +34,8 @@ async function start() {
     await nuxt.ready()
   }
 
-  app.get('/', faucetHandler)
-  app.post('/claims', claimsHandler)
+  app.get('/', faucetHandler(bootstrap.config))
+  app.post('/claims', claimsHandler(bootstrap.config))
 
   // Give nuxt middleware to express
   app.use(nuxt.render)

@@ -66,6 +66,9 @@ module.exports = {
    */
   build: {
     extend(config, ctx) {
+      config.node = {
+        fs: 'empty'
+      }
       if (ctx.isDev && ctx.isClient) {
         config.module.rules.push({
           enforce: 'pre',
