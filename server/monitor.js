@@ -1,4 +1,4 @@
-const nem = require('nem2-sdk')
+const { Listener } = require('nem2-sdk')
 
 module.exports = (url, address, hooks = {}) => {
   const nextObserver = (label, hook) => info => {
@@ -6,7 +6,7 @@ module.exports = (url, address, hooks = {}) => {
     console.log('[%s]\n%s\n', label, JSON.stringify(info))
   }
   const errorObserver = err => console.error(err)
-  const listener = new nem.Listener(url)
+  const listener = new Listener(url)
   listener.open().then(() => {
     listener
       .status(address)

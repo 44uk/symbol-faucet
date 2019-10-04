@@ -19,7 +19,7 @@ const handler = conf => {
   const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
   const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
 
-  const distributionMosaicIdObservable = conf.MOSAIC_HEX
+  const distributionMosaicId$ = conf.MOSAIC_HEX
     ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
     : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
 
@@ -42,10 +42,7 @@ const handler = conf => {
     const recipientAddress = nem.Address.createFromRawAddress(recipient)
     console.debug(`Recipient => %s`, recipientAddress.pretty())
 
-    rx.forkJoin([
-      distributionMosaicIdObservable,
-      chainHttp.getBlockchainHeight()
-    ])
+    rx.forkJoin([distributionMosaicId$, chainHttp.getBlockchainHeight()])
       .pipe(
         op.tap(([distributionMosaicId, currentHeight]) => {
           console.debug(`Distribution MosaicId => %o`, distributionMosaicId)
@@ -55,14 +52,12 @@ const handler = conf => {
           return rx.forkJoin([
             mosaicHttp.getMosaic(distributionMosaicId),
             accountHttp.getAccountInfo(recipientAddress).pipe(
-              op.catchError(err => {
-                if (err.code === 'ECONNREFUSED') {
-                  throw new Error(err.message)
-                }
+              op.catchError(error => {
+                const err = JSON.parse(error.message)
                 if (err.statusCode === 404) {
                   return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
                 } else {
-                  throw new Error('Something wrong with response.')
+                  rx.throwError('Something wrong with response.')
                 }
               }),
               op.mergeMap(account => {
@@ -74,9 +69,7 @@ const handler = conf => {
                   .pipe(
                     op.mergeMap(_ => _),
                     op.find(mosaicView =>
-                      mosaicView.mosaicInfo.mosaicId.equals(
-                        distributionMosaicId
-                      )
+                      mosaicView.mosaicInfo.id.equals(distributionMosaicId)
                     ),
                     op.map(mosaicView => {
                       if (
@@ -97,7 +90,7 @@ const handler = conf => {
               .pipe(
                 op.mergeMap(_ => _),
                 op.find(mosaicView =>
-                  mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
+                  mosaicView.mosaicInfo.id.equals(distributionMosaicId)
                 ),
                 op.catchError(err => {
                   if (err.code === 'ECONNREFUSED') {
@@ -119,7 +112,7 @@ const handler = conf => {
                 })
               ),
             accountHttp
-              .outgoingTransactions(conf.FAUCET_ACCOUNT, { pageSize: 25 })
+              .outgoingTransactions(conf.FAUCET_ACCOUNT.address, { pageSize: 25 })
               .pipe(
                 op.catchError(err => {
                   if (err.code === 'ECONNREFUSED') {
@@ -130,7 +123,7 @@ const handler = conf => {
                 op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
                 op.filter(tx => {
                   return (
-                    tx.recipient.equals(recipientAddress) &&
+                    recipientAddress.equals(tx.recipientAddress) &&
                     currentHeight.compact() - tx.transactionInfo.height.compact() < conf.WAIT_HEIGHT
                   )
                 }),
@@ -144,8 +137,9 @@ const handler = conf => {
                   return true
                 })
               ),
+            // 送信アドレスの直近の未承認履歴取得
             accountHttp
-              .unconfirmedTransactions(conf.FAUCET_ACCOUNT, { pageSize: 25 })
+              .unconfirmedTransactions(conf.FAUCET_ACCOUNT.address, { pageSize: 25 })
               .pipe(
                 op.catchError(err => {
                   if (err.code === 'ECONNREFUSED') {
@@ -154,7 +148,7 @@ const handler = conf => {
                 }),
                 op.mergeMap(_ => _),
                 op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-                op.filter(tx => tx.recipient.equals(recipientAddress)),
+                op.filter(tx => recipientAddress.equals(tx.recipientAddress)),
                 op.toArray(),
                 op.map(txes => {
                   if (txes.length > conf.MAX_UNCONFIRMED) {
@@ -168,7 +162,13 @@ const handler = conf => {
           ])
         }),
         op.mergeMap(results => {
-          const [mosaicInfo, recipientAccount, faucetOwned, outgoings, unconfirmed] = results
+          const [
+            mosaicInfo,
+            recipientAccount,
+            faucetOwned,
+            outgoings,
+            unconfirmed
+          ] = results
 
           if (!(outgoings && unconfirmed)) {
             throw new Error(
@@ -188,17 +188,17 @@ const handler = conf => {
           console.debug(`Payout amount => %d`, txAbsoluteAmount)
 
           const mosaic = new nem.Mosaic(
-            mosaicInfo.mosaicId,
+            mosaicInfo.id,
             nem.UInt64.fromUint(txAbsoluteAmount)
           )
 
           const transferTx = buildTransferTransaction(
             recipientAddress,
             conf.MAX_TRANSACTION_DEADLINE,
-            mosaic,
-            buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount)
+            [mosaic],
+            buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount),
+            conf.MAX_FEE ? nem.UInt64.fromUint(conf.MAX_FEE) : undefined
           )
-          transferTx.maxFee = nem.UInt64.fromUint(conf.MAX_FEE)
 
           const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx, conf.GENERATION_HASH)
           console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)
@@ -239,13 +239,14 @@ function buildMessage(message = '', encryption = false, faucetAccount, publicAcc
   }
 }
 
-const buildTransferTransaction = (address, deadline, transferrable, message) => {
+const buildTransferTransaction = (address, deadline, transferrables, message, maxFee) => {
   return nem.TransferTransaction.create(
     nem.Deadline.create(deadline, jsJoda.ChronoUnit.MINUTES),
     address,
-    [transferrable],
+    transferrables,
     message,
-    address.networkType
+    address.networkType,
+    maxFee
   )
 }
 
