@@ -127,18 +127,17 @@ export default {
   },
   async mounted() {
     const faucetAddress = Address.createFromRawAddress(this.address)
-    this.listener = new Listener(this.apiUrl.replace('http', 'ws'), WebSocket)
+    this.listener = new Listener(this.publicUrl.replace('http', 'ws'), WebSocket)
     this.listener.open().then(() => {
       // prettier-ignore
       this.listener.unconfirmedAdded(faucetAddress)
         .subscribe(_ => {
-          this.info('Your request had been unconfirmed!')
+          this.info('Your request had been unconfirmed status!')
         })
       // prettier-ignore
       this.listener.confirmed(faucetAddress)
         .subscribe(_ => {
-          console.log(_)
-          this.info('Your Request had been confirmed!')
+          this.info('Your Request had been confirmed status!')
         })
     })
 

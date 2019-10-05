@@ -53,11 +53,16 @@ const handler = conf => {
             mosaicHttp.getMosaic(distributionMosaicId),
             accountHttp.getAccountInfo(recipientAddress).pipe(
               op.catchError(error => {
-                const err = JSON.parse(error.message)
-                if (err.statusCode === 404) {
-                  return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
-                } else {
-                  rx.throwError('Something wrong with response.')
+                // FIXME: error object can be improved
+                try {
+                  const err = JSON.parse(error.message)
+                  if (err.statusCode === 404) {
+                    return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
+                  } else {
+                    throw new Error('Something wrong with response.')
+                  }
+                } catch (err) {
+                  return rx.of(null)
                 }
               }),
               op.mergeMap(account => {
@@ -92,16 +97,17 @@ const handler = conf => {
                 op.find(mosaicView =>
                   mosaicView.mosaicInfo.id.equals(distributionMosaicId)
                 ),
-                op.catchError(err => {
-                  if (err.code === 'ECONNREFUSED') {
-                    throw new Error(err.message)
-                  }
-                  if (err.statusCode === 404) {
-                    return rx.of(null)
-                  } else {
-                    throw new Error(
-                      'Something wrong with MosaicService response'
-                    )
+                op.catchError(error => {
+                  // FIXME: error object can be improved
+                  try {
+                    const err = JSON.parse(error.message)
+                    if (err.statusCode === 404) {
+                      return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
+                    } else {
+                      throw new Error('Something wrong with response.')
+                    }
+                  } catch (err) {
+                    throw new Error('Something wrong with response.')
                   }
                 }),
                 op.map(mosaic => {
