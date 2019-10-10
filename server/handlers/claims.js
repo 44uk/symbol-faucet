@@ -129,7 +129,7 @@ const handler = conf => {
                 op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
                 op.filter(tx => {
                   return (
-                    recipientAddress.equals(tx.recipientAddress) &&
+                    tx.recipientAddress.equals(recipientAddress) &&
                     currentHeight.compact() - tx.transactionInfo.height.compact() < conf.WAIT_HEIGHT
                   )
                 }),
@@ -154,7 +154,7 @@ const handler = conf => {
                 }),
                 op.mergeMap(_ => _),
                 op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-                op.filter(tx => recipientAddress.equals(tx.recipientAddress)),
+                op.filter(tx => tx.recipientAddress.equals(recipientAddress)),
                 op.toArray(),
                 op.map(txes => {
                   if (txes.length > conf.MAX_UNCONFIRMED) {
