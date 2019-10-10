@@ -6,5 +6,5 @@ app.json
 Dockerfile
 README.md
 dist/
-node_modules/
 docs/
+node_modules/

@@ -1,20 +1,29 @@
 const rx = require('rxjs')
 const op = require('rxjs/operators')
-const nem = require('nem2-sdk')
+const {
+  AccountHttp,
+  BlockHttp,
+  NamespaceHttp,
+  MosaicHttp,
+  MosaicService,
+  MosaicId,
+  NamespaceId
+} = require('nem2-sdk')
 
 const handler = conf => {
-  const blockHttp = new nem.BlockHttp(conf.API_URL)
-  const accountHttp = new nem.AccountHttp(conf.API_URL)
-  const namespaceHttp = new nem.NamespaceHttp(conf.API_URL)
-  const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
-  const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
+  const blockHttp = new BlockHttp(conf.API_URL)
+  const accountHttp = new AccountHttp(conf.API_URL)
+  const namespaceHttp = new NamespaceHttp(conf.API_URL)
+  const mosaicHttp = new MosaicHttp(conf.API_URL)
+  const mosaicService = new MosaicService(accountHttp, mosaicHttp)
 
   const nemesisBlockObservable = conf.GENERATION_HASH
     ? rx.of({ generationHash: conf.GENERATION_HASH })
     : blockHttp.getBlockByHeight(1)
+
   const distributionMosaicIdObservable = conf.MOSAIC_HEX
-    ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
-    : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
+    ? rx.of(new MosaicId(conf.MOSAIC_ID))
+    : namespaceHttp.getLinkedMosaicId(new NamespaceId(conf.MOSAIC_ID))
 
   return (_req, res, next) => {
     rx.forkJoin([nemesisBlockObservable, distributionMosaicIdObservable])
@@ -28,26 +37,26 @@ const handler = conf => {
                 .pipe(
                   op.mergeMap(_ => _),
                   op.find(mosaicView =>
-                    mosaicView.mosaicInfo.mosaicId.equals(distributionMosaicId)
+                    mosaicView.mosaicInfo.id.equals(distributionMosaicId)
                   ),
                   op.map(mosaicView => ({ mosaicView, account, nemesisBlock }))
                 )
             })
           )
         }),
-        op.catchError(err => {
-          if (err.code === 'ECONNREFUSED') {
-            throw new Error(err.message)
+        op.catchError(error => {
+          if (error.code === 'ECONNREFUSED') {
+            throw new Error(error.message)
           }
-          if (err.response) {
-            const res = JSON.parse(err.response.text)
+          if (error.response) {
+            const res = JSON.parse(error.response.text)
             if (res.code === 'ResourceNotFound') {
               throw new Error(`${res.code}: ${res.message}`)
             } else {
               throw new Error('Something wrong with MosaicService response')
             }
           } else {
-            throw new Error(err)
+            throw new Error(error)
           }
         })
       )
@@ -62,7 +71,7 @@ const handler = conf => {
           const balance = mosaicView.amount.compact()
           const drained = balance < conf.OUT_MAX
           const attributes = {
-            drained: drained,
+            drained,
             network: conf.NETWORK,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,

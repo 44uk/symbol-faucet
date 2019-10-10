@@ -12,19 +12,19 @@ div
             b-field(label="Recipient")
               b-input(v-model="form.recipient"
                 required
+                maxlength="46"
                 :pattern="recipientPattern"
                 :title="recipientPlaceholder"
                 :placeholder="recipientPlaceholder"
-                maxlength="46"
                 :disabled="drained"
               )
           .column.is-4
             b-field(label="Amount")
               b-input(v-model.number="form.amount" type="number"
-                :placeholder="amountPlaceholder"
                 min="0"
                 :max="outOpt"
                 :step="step"
+                :placeholder="amountPlaceholder"
                 :disabled="drained"
               )
 
@@ -66,6 +66,8 @@ div
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
+import { Address, Listener } from 'nem2-sdk'
+
 import Readme from '~/components/Readme'
 
 export default {
@@ -124,16 +126,31 @@ export default {
     return data
   },
   async mounted() {
+    const faucetAddress = Address.createFromRawAddress(this.address)
+    this.listener = new Listener(this.publicUrl.replace('http', 'ws'), WebSocket)
+    this.listener.open().then(() => {
+      // prettier-ignore
+      this.listener.unconfirmedAdded(faucetAddress)
+        .subscribe(_ => {
+          this.info('Your request had been unconfirmed status!')
+        })
+      // prettier-ignore
+      this.listener.confirmed(faucetAddress)
+        .subscribe(_ => {
+          this.info('Your Request had been confirmed status!')
+        })
+    })
+
     if (this.$recaptcha) {
       await this.$recaptcha.init()
     }
     if (process.browser) {
-      const params = this.$nuxt.$route.query
-      this.form.recipient = params.recipient
-      this.form.amount = params.amount
-      this.form.message = params.message
-      this.form.encryption = params.encryption
+      const { recipient, amount, message, encryption } = this.$nuxt.$route.query
+      this.form = { ...this.form, recipient, amount, message, encryption }
     }
+  },
+  beforeDestroy() {
+    this.listener.close()
   },
   methods: {
     ...mapActions(['setConfig', 'addTransaction']),
@@ -146,14 +163,14 @@ export default {
       }
       this.$axios
         .$post('/claims', formData)
-        .then(response => {
+        .then(resp => {
           this.info(`Send your declaration.`)
-          this.success(`Amount: ${response.amount} ${this.mosaicId}`)
-          this.success(`Transaction Hash: ${response.txHash}`)
+          this.success(`Amount: ${resp.amount} ${this.mosaicId}`)
+          this.success(`Transaction Hash: ${resp.txHash}`)
           const transaction = {
-            hash: response.txHash,
+            hash: resp.txHash,
             mosaicId: this.mosaicId,
-            amount: response.amount,
+            amount: resp.amount,
             recipient: formData.recipient
           }
           this.addTransaction({ transaction })
@@ -169,14 +186,14 @@ export default {
         })
     },
     info(message) {
-      this.$snackbar.open({
+      this.$buefy.snackbar.open({
         type: 'is-info',
         message,
         queue: false
       })
     },
     success(message) {
-      this.$snackbar.open({
+      this.$buefy.snackbar.open({
         type: 'is-success',
         message,
         queue: false,
@@ -184,7 +201,7 @@ export default {
       })
     },
     warning(message) {
-      this.$snackbar.open({
+      this.$buefy.snackbar.open({
         type: 'is-warning',
         message,
         queue: false,
@@ -192,7 +209,7 @@ export default {
       })
     },
     failed(message) {
-      this.$snackbar.open({
+      this.$buefy.snackbar.open({
         type: 'is-danger',
         message,
         queue: false,
