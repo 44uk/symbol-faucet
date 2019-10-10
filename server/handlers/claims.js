@@ -1,9 +1,22 @@
 const qs = require('querystring')
 const axios = require('axios')
 const jsJoda = require('js-joda')
-const nem = require('nem2-sdk')
+const {
+  Account,
+  Address,
+  Mosaic,
+  UInt64,
+  EmptyMessage,
+  PlainMessage,
+  TransferTransaction,
+  Deadline,
+  ChainHttp,
+  TransactionHttp,
+  MosaicHttp
+} = require('nem2-sdk')
 const rx = require('rxjs')
-const op = require('rxjs/operators')
+const { of, forkJoin } = require('rxjs')
+const { map, mergeMap, tap, catchError } = require('rxjs/operators')
 const _ = require('lodash')
 _.mixin({
   isBlank: val => {
@@ -11,20 +24,17 @@ _.mixin({
   }
 })
 
-const handler = conf => {
-  const chainHttp = new nem.ChainHttp(conf.API_URL)
-  const transactionHttp = new nem.TransactionHttp(conf.API_URL)
-  const accountHttp = new nem.AccountHttp(conf.API_URL)
-  const namespaceHttp = new nem.NamespaceHttp(conf.API_URL)
-  const mosaicHttp = new nem.MosaicHttp(conf.API_URL)
-  const mosaicService = new nem.MosaicService(accountHttp, mosaicHttp)
+const { AccountService } = require('../services/account.service')
 
-  const distributionMosaicId$ = conf.MOSAIC_HEX
-    ? rx.of(new nem.MosaicId(conf.MOSAIC_ID))
-    : namespaceHttp.getLinkedMosaicId(new nem.NamespaceId(conf.MOSAIC_ID))
+const handler = conf => {
+  const chainHttp = new ChainHttp(conf.API_URL)
+  const mosaicHttp = new MosaicHttp(conf.API_URL)
+  const transactionHttp = new TransactionHttp(conf.API_URL)
+  const accountService = new AccountService(conf.API_URL)
 
   return async (req, res, next) => {
     const { recipient, amount, message, encryption, reCaptcha } = req.body
+    console.debug({ recipient, amount, message, encryption, reCaptcha })
 
     if (conf.RECAPTCHA_ENABLED) {
       const reCaptchaResult = await requestReCaptchaValidation(
@@ -39,181 +49,127 @@ const handler = conf => {
       console.debug('Disabled ReCaptcha')
     }
 
-    const recipientAddress = nem.Address.createFromRawAddress(recipient)
-    console.debug(`Recipient => %s`, recipientAddress.pretty())
+    const recipientAddress = Address.createFromRawAddress(recipient)
+    const recipientAccount = new Account(recipientAddress)
+    console.debug(`Recipient => %s`, recipientAccount.address.pretty())
 
-    rx.forkJoin([distributionMosaicId$, chainHttp.getBlockchainHeight()])
-      .pipe(
-        op.tap(([distributionMosaicId, currentHeight]) => {
-          console.debug(`Distribution MosaicId => %o`, distributionMosaicId)
-          console.debug(`Current Height => %d`, currentHeight.compact())
-        }),
-        op.mergeMap(([distributionMosaicId, currentHeight]) => {
-          return rx.forkJoin([
-            mosaicHttp.getMosaic(distributionMosaicId),
-            accountHttp.getAccountInfo(recipientAddress).pipe(
-              op.catchError(error => {
-                // FIXME: error object can be improved
-                try {
-                  const err = JSON.parse(error.message)
-                  if (err.statusCode === 404) {
-                    return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
-                  } else {
-                    throw new Error('Something wrong with response.')
-                  }
-                } catch (err) {
-                  return rx.of(null)
-                }
-              }),
-              op.mergeMap(account => {
-                if (!account) {
-                  return rx.of(account)
-                }
-                return mosaicService
-                  .mosaicsAmountViewFromAddress(recipientAddress)
-                  .pipe(
-                    op.mergeMap(_ => _),
-                    op.find(mosaicView =>
-                      mosaicView.mosaicInfo.id.equals(distributionMosaicId)
-                    ),
-                    op.map(mosaicView => {
-                      if (
-                        mosaicView &&
-                        mosaicView.amount.compact() > conf.ENOUGH_BALANCE
-                      ) {
-                        throw new Error(
-                          `Your account already has enough balance => (${mosaicView.relativeAmount()})`
-                        )
-                      }
-                      return account
-                    })
-                  )
-              })
-            ),
-            mosaicService
-              .mosaicsAmountViewFromAddress(conf.FAUCET_ACCOUNT.address)
-              .pipe(
-                op.mergeMap(_ => _),
-                op.find(mosaicView =>
-                  mosaicView.mosaicInfo.id.equals(distributionMosaicId)
-                ),
-                op.catchError(error => {
-                  // FIXME: error object can be improved
-                  try {
-                    const err = JSON.parse(error.message)
-                    if (err.statusCode === 404) {
-                      return rx.of(null) // NOTE: When PublicKey of the address is not exposed on the network.
-                    } else {
-                      throw new Error('Something wrong with response.')
-                    }
-                  } catch (err) {
-                    throw new Error('Something wrong with response.')
-                  }
-                }),
-                op.map(mosaic => {
-                  if (mosaic.amount.compact() < conf.OUT_MAX) {
-                    throw new Error('The faucet has been drained.')
-                  }
-                  return mosaic
-                })
-              ),
-            accountHttp
-              .outgoingTransactions(conf.FAUCET_ACCOUNT.address, { pageSize: 25 })
-              .pipe(
-                op.catchError(err => {
-                  if (err.code === 'ECONNREFUSED') {
-                    throw new Error(err.message)
-                  }
-                }),
-                op.mergeMap(_ => _),
-                op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-                op.filter(tx => {
-                  return (
-                    tx.recipientAddress.equals(recipientAddress) &&
-                    currentHeight.compact() - tx.transactionInfo.height.compact() < conf.WAIT_HEIGHT
-                  )
-                }),
-                op.toArray(),
-                op.map(txes => {
-                  if (txes.length > 0) {
-                    throw new Error(
-                      `Too many claiming. Please wait for ${conf.WAIT_HEIGHT} blocks.`
-                    )
-                  }
-                  return true
-                })
-              ),
-            // 送信アドレスの直近の未承認履歴取得
-            accountHttp
-              .unconfirmedTransactions(conf.FAUCET_ACCOUNT.address, { pageSize: 25 })
-              .pipe(
-                op.catchError(err => {
-                  if (err.code === 'ECONNREFUSED') {
-                    throw new Error(err.message)
-                  }
-                }),
-                op.mergeMap(_ => _),
-                op.filter(tx => tx.type === nem.TransactionType.TRANSFER),
-                op.filter(tx => tx.recipientAddress.equals(recipientAddress)),
-                op.toArray(),
-                op.map(txes => {
-                  if (txes.length > conf.MAX_UNCONFIRMED) {
-                    throw new Error(
-                      `Too many unconfirmed claiming. Please wait for blocks confirmed.`
-                    )
-                  }
-                  return true
-                })
+    const currentHeight = await chainHttp.getBlockchainHeight().toPromise()
+    forkJoin([
+      // fetch mosaic info
+      mosaicHttp.getMosaic(conf.MOSAIC_ID),
+      // check recipient balance
+      accountService
+        .getAccountInfoWithMosaicAmountView(recipientAccount, conf.MOSAIC_ID)
+        .pipe(
+          map(({ account, mosaicAmountView }) => {
+            if (
+              mosaicAmountView &&
+              mosaicAmountView.amount.compact() > conf.MAX_BALANCE
+            ) {
+              throw new Error(
+                `Your account already has enough balance => (${mosaicAmountView.relativeAmount()})`
               )
-          ])
-        }),
-        op.mergeMap(results => {
-          const [
-            mosaicInfo,
-            recipientAccount,
-            faucetOwned,
-            outgoings,
-            unconfirmed
-          ] = results
-
-          if (!(outgoings && unconfirmed)) {
-            throw new Error(
-              'Something wrong with outgoing or unconfirmed checking.'
-            )
-          }
+            }
+            return account
+          })
+        ),
+      // check faucet balance
+      accountService
+        .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
+        .pipe(
+          map(({ account, mosaicAmountView }) => {
+            if (mosaicAmountView.amount.compact() < conf.OUT_MAX) {
+              throw new Error('The faucet has been drained.')
+            }
+            return mosaicAmountView
+          })
+        ),
+      // check faucet outgoing
+      accountService
+        .getTransferOutgoings(
+          conf.FAUCET_ACCOUNT,
+          recipientAccount,
+          currentHeight,
+          conf.WAIT_BLOCK
+        )
+        .pipe(
+          map(txes => {
+            if (txes.length > 0) {
+              throw new Error(
+                `Too many claiming. Please wait for ${conf.WAIT_BLOCK} blocks.`
+              )
+            }
+            return txes
+          })
+        ),
+      // check faucet unconfirmed
+      accountService
+        .getTransferUnconfirmed(conf.FAUCET_ACCOUNT, recipientAccount)
+        .pipe(
+          map(txes => {
+            if (txes.length >= conf.MAX_UNCONFIRMED) {
+              throw new Error(
+                `Too many unconfirmed claiming. Please wait ${txes.length} transactions confirmed.`
+              )
+            }
+            return txes
+          })
+        )
+    ])
+      .pipe(
+        map(results => {
+          const [mosaicInfo, recipientAccount, faucetOwned] = results
 
           // determine amount to pay out
-          const faucetBalance = faucetOwned.amount.compact()
           const divisibility = mosaicInfo.divisibility
+          const faucetBalance = faucetOwned.amount.compact()
           const txAbsoluteAmount =
             sanitizeAmount(amount, divisibility, conf.OUT_MAX) ||
-            Math.min(faucetBalance, randomInRange(conf.OUT_MIN, conf.OUT_MAX, divisibility))
+            Math.min(
+              faucetBalance,
+              randomInRange(conf.OUT_MIN, conf.OUT_MAX, divisibility)
+            )
           console.debug(`Faucet balance => %d`, faucetOwned.relativeAmount())
           console.debug(`Mosaic divisibility => %d`, divisibility)
           console.debug(`Input amount => %s`, amount)
           console.debug(`Payout amount => %d`, txAbsoluteAmount)
 
-          const mosaic = new nem.Mosaic(
+          const mosaic = new Mosaic(
             mosaicInfo.id,
-            nem.UInt64.fromUint(txAbsoluteAmount)
+            UInt64.fromUint(txAbsoluteAmount)
           )
 
           const transferTx = buildTransferTransaction(
-            recipientAddress,
-            conf.MAX_TRANSACTION_DEADLINE,
+            recipientAccount.address,
+            conf.MAX_DEADLINE,
             [mosaic],
-            buildMessage(message, encryption, conf.FAUCET_ACCOUNT, recipientAccount),
-            conf.MAX_FEE ? nem.UInt64.fromUint(conf.MAX_FEE) : undefined
+            buildMessage(
+              message,
+              encryption,
+              conf.FAUCET_ACCOUNT,
+              recipientAccount
+            ),
+            conf.MAX_FEE ? conf.MAX_FEE : undefined
           )
 
-          const signedTx = conf.FAUCET_ACCOUNT.sign(transferTx, conf.GENERATION_HASH)
+          console.debug(`Fee => %s`, conf.MAX_FEE)
           console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)
+          const signedTx = conf.FAUCET_ACCOUNT.sign(
+            transferTx,
+            conf.GENERATION_HASH
+          )
+          return {
+            signedTx,
+            relativeAmount: txAbsoluteAmount / 10 ** mosaicInfo.divisibility
+          }
+        }),
+        mergeMap(({ signedTx, relativeAmount }) => {
           return transactionHttp.announce(signedTx).pipe(
-            op.mergeMap(response => {
+            mergeMap(resp => {
               return rx.of({
-                response,
+                resp,
                 txHash: signedTx.hash,
-                amount: txAbsoluteAmount / Math.pow(10, mosaicInfo.divisibility)
+                amount: relativeAmount
               })
             })
           )
@@ -221,38 +177,50 @@ const handler = conf => {
       )
       .subscribe(
         result => res.json(result),
-        err => {
-          console.error(err)
-          res.status(422).json({ error: err.message })
+        error => {
+          console.error(error)
+          res.status(422).json({ error: error.message })
         }
       )
   }
 }
 
-function buildMessage(message = '', encryption = false, faucetAccount, publicAccount = null) {
-  if (encryption && publicAccount === null) {
+const buildMessage = (
+  message = '',
+  encryption = false,
+  faucetAccount,
+  publicAccount = null
+) => {
+  console.log(publicAccount)
+  if (encryption && (publicAccount == null || publicAccount.keyPair == null)) {
     throw new Error('Required recipient public key exposed to encrypt message.')
   }
   if (_.isBlank(message)) {
     console.debug('Empty message')
-    return nem.EmptyMessage
+    return EmptyMessage
   } else if (encryption) {
     console.debug('Encrypt message => %s', message)
     return faucetAccount.encryptMessage(message, publicAccount)
   } else {
     console.debug('Plain message => %s', message)
-    return nem.PlainMessage.create(message)
+    return PlainMessage.create(message)
   }
 }
 
-const buildTransferTransaction = (address, deadline, transferrables, message, maxFee) => {
-  return nem.TransferTransaction.create(
-    nem.Deadline.create(deadline, jsJoda.ChronoUnit.MINUTES),
+const buildTransferTransaction = (
+  address,
+  deadline,
+  transferrable,
+  message,
+  fee
+) => {
+  return TransferTransaction.create(
+    Deadline.create(deadline, jsJoda.ChronoUnit.MINUTES),
     address,
-    transferrables,
+    transferrable,
     message,
     address.networkType,
-    maxFee
+    UInt64.fromUint(fee)
   )
 }
 
@@ -274,7 +242,7 @@ const randomInRange = (from, to, base) => {
 }
 
 const sanitizeAmount = (amount, base, max) => {
-  const absoluteAmount = parseFloat(amount) * Math.pow(10, base)
+  const absoluteAmount = parseFloat(amount) * 10 ** base
   if (absoluteAmount > max) {
     return max
   } else if (absoluteAmount <= 0) {

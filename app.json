@@ -51,13 +51,19 @@
     "NEM_OUT_OPT": {
       "required": false
     },
-    "NEM_ENOUGH_BALANCE": {
+    "NEM_FEE": {
+      "description": "Max Transaction Fee"
+    },
+    "NEM_DEADLINE": {
+      "description": "Transaction deadline (min)"
+    },
+    "NEM_MAX_BALANCE": {
       "value": "100000000000"
     },
     "NEM_MAX_UNCONFIRMED": {
       "value": "99"
     },
-    "NEM_WAIT_HEIGHT": {
+    "NEM_WAIT_BLOCK": {
       "value": "0"
     },
     "RECAPTCHA_CLIENT_SECRET": {
