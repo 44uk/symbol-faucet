@@ -34,7 +34,7 @@
     "js-joda": "^1.11.0",
     "lodash": "^4.17.15",
     "mini.css": "^3.0.1",
-    "nem2-sdk": "^0.14.1",
+    "nem2-sdk": "^0.14.2",
     "net": "^1.0.2",
     "nuxt": "^2.10.1",
     "nuxt-buefy": "^0.3.16",
@@ -68,7 +68,7 @@
     "eslint-plugin-standard": ">=4.0.1",
     "eslint-plugin-vue": "^5.2.3",
     "jest": "^24.9.0",
-    "nodemon": "^1.19.3",
+    "nodemon": "^1.19.4",
     "prettier": "1.18.2",
     "vue-jest": "^3.0.5"
   }
