@@ -31,7 +31,9 @@ faucet:
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
+    # for reading private key from addresses.yaml
     - ../../build/generated-addresses:/addresses:ro
+    # for reading generation hash from block file
     - ../../data/peer-node-0/00000:/data/00000:ro
   ports:
     - '4000:4000'
@@ -40,7 +42,7 @@ faucet:
     - peer-node-0-nemgen
 ```
 
-#### Using specific PrivateKey
+#### Using specific PrivateKey and GenerationHash
 
 ```yaml:docker-compose.yml
 faucet:
