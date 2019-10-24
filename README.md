@@ -39,7 +39,7 @@ faucet:
     - '4000:4000'
   depends_on:
     - rest-gateway
-    - peer-node-0-nemgen
+    - peer-node-0
 ```
 
 #### Using specific PrivateKey and GenerationHash
