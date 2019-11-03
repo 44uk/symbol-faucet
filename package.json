@@ -34,7 +34,7 @@
     "js-joda": "^1.11.0",
     "lodash": "^4.17.15",
     "mini.css": "^3.0.1",
-    "nem2-sdk": "^0.14.3",
+    "nem2-sdk": "^0.14.4",
     "net": "^1.0.2",
     "nuxt": "^2.10.2",
     "nuxt-buefy": "^0.3.17",
@@ -47,7 +47,7 @@
     "stylus-loader": "^3.0.2",
     "tls": "0.0.1",
     "utf-8-validate": "^5.0.2",
-    "vuex-persistedstate": "^2.5.4"
+    "vuex-persistedstate": "^2.7.0"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^1.1.2",
@@ -60,7 +60,7 @@
     "eslint-config-standard": ">=14.1.0",
     "eslint-loader": "^3.0.2",
     "eslint-plugin-import": ">=2.18.2",
-    "eslint-plugin-jest": ">=22.20.1",
+    "eslint-plugin-jest": ">=23.0.2",
     "eslint-plugin-node": ">=10.0.0",
     "eslint-plugin-nuxt": ">=0.4.3",
     "eslint-plugin-prettier": "3.1.1",
