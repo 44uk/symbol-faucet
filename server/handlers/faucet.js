@@ -22,7 +22,7 @@ const handler = conf => {
       )
       .subscribe(
         info => {
-          const { mosaicAmountView, account } = info
+          const { account, mosaicAmountView } = info
           const denominator = 10 ** mosaicAmountView.mosaicInfo.divisibility
           const balance = mosaicAmountView.amount.compact()
           const drained = balance < conf.OUT_MAX

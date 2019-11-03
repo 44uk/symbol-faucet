@@ -24,6 +24,9 @@ const init = async () => {
   if (!/[0-9A-Fa-f]{64}/.test(generationHash)) {
     const blockService = new BlockService(API_URL)
     generationHash = await blockService.getGenerationHash().toPromise()
+    if (generationHash == null) {
+      throw new Error('Failed to get GenerationHash from API Node')
+    }
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
   }
 
