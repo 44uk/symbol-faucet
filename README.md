@@ -91,6 +91,12 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 - [44uk\/nem2-faucet | Docker Hub](https://hub.docker.com/r/44uk/nem2-faucet)
 
+## :shell: Claimimg without Browser
+
+```shell
+curl http://localhost:4000/claims -d 'recipient=__YOUR_ADDRESS__'
+```
+
 ## :fire: Customize
 
 ```shell
