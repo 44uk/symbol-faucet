@@ -4,11 +4,6 @@ section.section
     .content
       h3.title 📄 Readme
       ul
-        li
-          strong "{{network}}"
-          | &nbsp;faucet connected to&nbsp;
-          a(:href="publicUrl" target="_blank"): strong {{publicUrl}}
-          | .
         li You can get&nbsp;
           strong "{{mosaicId | prefix0x}}"
           | &nbsp;randomly from&nbsp;
@@ -21,19 +16,26 @@ section.section
           | &nbsp;when you no longer need.
         li This is an experimental server, the spec can be change without notice.
         li Good luck! NEM development!
+
+      h3.title 📶 Node Information
+      pre
+        | Network: {{network}}
+        | API-URL: {{publicUrl}}
+        | GenerationHash: {{generationHash}}
 </template>
 
 <script>
 export default {
   filters: {
-    prefix0x: val => (/[0-9A-Fa-f]{16}/.test(val) ? `0x${val}` : val)
+    prefix0x: (val) => (/[0-9A-Fa-f]{16}/.test(val) ? `0x${val}` : val)
   },
   props: {
-    network: { required: true, type: String },
-    publicUrl: { required: true, type: String },
     mosaicId: { required: true, type: String },
     outMin: { required: true, type: Number },
-    outMax: { required: true, type: Number }
+    outMax: { required: true, type: Number },
+    network: { required: true, type: String },
+    publicUrl: { required: true, type: String },
+    generationHash: { required: true, type: String },
   }
 }
 </script>

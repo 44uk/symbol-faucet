@@ -1,11 +1,11 @@
-const pkg = require('./package')
+import pkg from './package.json'
 
 const recaptchaPlugin =
   process.env.RECAPTCHA_CLIENT_SECRET && process.env.RECAPTCHA_SERVER_SECRET
     ? ['@nuxtjs/recaptcha']
     : []
 
-module.exports = {
+export const config: any = {
   mode: 'universal',
 
   server: {
@@ -46,6 +46,8 @@ module.exports = {
    */
   modules: ['@nuxtjs/axios', 'nuxt-buefy'].concat(recaptchaPlugin),
 
+  buildModules: ['@nuxt/typescript-build'],
+
   /*
    ** Axios module configuration
    */
@@ -65,18 +67,20 @@ module.exports = {
    ** Build configuration
    */
   build: {
-    extend(config, ctx) {
+    extend(config: any, ctx: any) {
       config.node = {
         fs: 'empty'
       }
       if (ctx.isDev && ctx.isClient) {
-        config.module.rules.push({
-          enforce: 'pre',
-          test: /\.(js|vue)$/,
-          loader: 'eslint-loader',
-          exclude: /(node_modules)/
-        })
+        // config.module.rules.push({
+        //   enforce: 'pre',
+        //   test: /\.(js|vue)$/,
+        //   loader: 'eslint-loader',
+        //   exclude: /(node_modules)/
+        // })
       }
     }
   }
 }
+
+export default config

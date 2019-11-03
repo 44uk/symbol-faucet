@@ -1,8 +1,10 @@
-const { map } = require('rxjs/operators')
-const { BlockHttp } = require('nem2-sdk')
+import { map } from 'rxjs/operators'
+import { BlockHttp } from 'nem2-sdk'
 
-class BlockService {
-  constructor(apiUrl) {
+export class BlockService {
+  private apiUrl: string
+
+  constructor(apiUrl: string) {
     this.apiUrl = apiUrl
   }
 
@@ -14,6 +16,4 @@ class BlockService {
   }
 }
 
-module.exports = {
-  BlockService
-}
+export default BlockService
