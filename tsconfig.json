@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    // "module": "commonjs",
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
