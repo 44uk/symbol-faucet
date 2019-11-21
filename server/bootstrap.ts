@@ -70,7 +70,3 @@ export const init = async () => {
   console.debug({ config })
   return config
 }
-
-export default {
-  init
-}
