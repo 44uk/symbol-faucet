@@ -6,7 +6,7 @@ RUN apk update && apk upgrade && apk add --no-cache \
   vim
 WORKDIR /app
 COPY . .
-RUN npm install --prod --no-optional && npm run build
+# RUN npm install --prod --no-optional && npm run build
 
 FROM node:10-alpine AS runner
 WORKDIR /app

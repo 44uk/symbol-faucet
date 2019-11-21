@@ -166,6 +166,7 @@ export const handler = conf => {
             transferTx,
             conf.GENERATION_HASH
           )
+          console.debug("Payload:", signedTx.payload)
           return {
             signedTx,
             relativeAmount: txAbsoluteAmount / 10 ** mosaicInfo.divisibility
