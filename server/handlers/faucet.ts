@@ -1,8 +1,10 @@
-const { catchError } = require('rxjs/operators')
-const { AccountService } = require('../services/account.service')
+import { catchError } from 'rxjs/operators'
+import { AccountService } from '../services/account.service'
 
-const handler = conf => {
+// @ts-ignore WIP
+export const handler = conf => {
   const accountService = new AccountService(conf.API_URL)
+// @ts-ignore WIP
   return (_req, res, next) => {
     accountService
       .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
@@ -22,13 +24,16 @@ const handler = conf => {
       )
       .subscribe(
         info => {
-          const { mosaicAmountView, account } = info
+          const { account, mosaicAmountView } = info
+// @ts-ignore WIP
           const denominator = 10 ** mosaicAmountView.mosaicInfo.divisibility
+// @ts-ignore WIP
           const balance = mosaicAmountView.amount.compact()
           const drained = balance < conf.OUT_MAX
           const faucet = {
             drained,
             network: conf.NETWORK,
+            generationHash: conf.GENERATION_HASH,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,
             mosaicId: conf.MOSAIC_ID.toHex(),
@@ -52,4 +57,4 @@ const handler = conf => {
   }
 }
 
-module.exports = handler
+export default handler

@@ -1,31 +1,37 @@
-const {
+import {
+  Account,
   AccountHttp,
   MosaicHttp,
   MosaicService,
-  TransactionType
-} = require('nem2-sdk')
-const { of } = require('rxjs')
-const { map, mergeMap, filter, catchError, toArray } = require('rxjs/operators')
+  TransactionType,
+  MosaicId,
+  UInt64,
+  TransferTransaction,
+} from 'nem2-sdk'
+import { of } from 'rxjs'
+import { map, mergeMap, filter, catchError, toArray } from 'rxjs/operators'
 
-class AccountService {
-  constructor(apiUrl) {
+export class AccountService {
+  private apiUrl: string
+  private accountHttp: AccountHttp
+  private mosaicHttp: MosaicHttp
+
+  constructor(apiUrl: string) {
     this.apiUrl = apiUrl
     this.accountHttp = new AccountHttp(apiUrl)
     this.mosaicHttp = new MosaicHttp(apiUrl)
   }
 
-  getAccountInfoWithMosaicAmountView(account, mosaicId) {
+  getAccountInfoWithMosaicAmountView(account: Account, mosaicId: MosaicId) {
     const mosaicService = new MosaicService(this.accountHttp, this.mosaicHttp)
     return this.accountHttp.getAccountInfo(account.address).pipe(
-      mergeMap(account => {
-        return mosaicService.mosaicsAmountViewFromAddress(account.address).pipe(
+      mergeMap(_ => mosaicService.mosaicsAmountViewFromAddress(account.address)
+        .pipe(
           mergeMap(_ => _),
-          filter(mosaicAmountView =>
-            mosaicAmountView.mosaicInfo.id.equals(mosaicId)
-          ),
+          filter(mosaicAmountView => mosaicAmountView.mosaicInfo.id.equals(mosaicId)),
           map(mosaicAmountView => ({ account, mosaicAmountView }))
         )
-      }),
+      ),
       catchError(error => {
         console.error({ error })
         return of({ account, mosaicAmountView: null })
@@ -33,16 +39,16 @@ class AccountService {
     )
   }
 
-  getTransferOutgoings(accountFrom, recipient, height, wait = 10) {
+  getTransferOutgoings(accountFrom: Account, recipient: Account, height: UInt64, wait = 10) {
     return this.accountHttp
-      .outgoingTransactions(accountFrom.address, { pageSize: 100 })
+      .outgoingTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
         filter(tx => tx.type === TransactionType.TRANSFER),
+        map(_ => _ as TransferTransaction),
         filter(tx => tx.recipientAddress.equals(recipient.address)),
-        filter(
-          tx => tx.transactionInfo.height.compact() > height.compact() - wait
-        ),
+// @ts-ignore WIP
+        filter(tx => tx.transactionInfo.height.compact() > height.compact() - wait),
         toArray(),
         catchError(error => {
           console.error({ error })
@@ -51,12 +57,13 @@ class AccountService {
       )
   }
 
-  getTransferUnconfirmed(accountFrom, recipient) {
+  getTransferUnconfirmed(accountFrom: Account, recipient: Account) {
     return this.accountHttp
-      .unconfirmedTransactions(accountFrom.address, { pageSize: 100 })
+      .unconfirmedTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
         filter(tx => tx.type === TransactionType.TRANSFER),
+        map(_ => _ as TransferTransaction),
         filter(tx => tx.recipientAddress.equals(recipient.address)),
         toArray(),
         catchError(error => {
@@ -67,6 +74,4 @@ class AccountService {
   }
 }
 
-module.exports = {
-  AccountService
-}
+export default AccountService

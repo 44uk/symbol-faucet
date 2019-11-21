@@ -58,6 +58,7 @@ div
   Readme(
     :publicUrl="faucet.publicUrl"
     :network="faucet.network"
+    :generationHash="faucet.generationHash"
     :mosaicId="faucet.mosaicId"
     :outMin="faucet.outMin"
     :outMax="faucet.outMax"
@@ -65,23 +66,24 @@ div
 </template>
 
 <script>
-import { Address, Listener, AccountHttp, MosaicHttp, MosaicService } from 'nem2-sdk'
 import {
-  Observable,
-  Subject,
+  Address,
+  AccountHttp,
+  MosaicHttp,
+  MosaicService,
+  Listener
+} from 'nem2-sdk'
+import {
   interval
 } from 'rxjs'
 import {
-  distinctUntilChanged,
-  concatMap,
-  mergeMap,
-  skipWhile,
   filter,
-  tap,
-  map
+  mergeMap,
+  concatMap,
+  distinctUntilChanged,
 } from 'rxjs/operators'
 
-import Readme from '~/components/Readme'
+import Readme from '@/components/Readme.vue'
 
 export default {
   name: 'Home',
@@ -135,8 +137,6 @@ export default {
     console.debug('asyncData: %o', data)
     return data
   },
-  computed: {
-  },
   created() {
     if (process.browser) {
       const { recipient, amount, message, encryption } = this.$nuxt.$route.query
@@ -144,16 +144,13 @@ export default {
         recipient,
         amount,
         message,
-        encryption: encryption && encryption.toLowerCase() === "true"
+        encryption: encryption && encryption.toLowerCase() === 'true'
       }
     }
   },
   async mounted() {
     const faucetAddress = Address.createFromRawAddress(this.faucet.address)
-    this.app.listener = new Listener(
-      this.faucet.publicUrl.replace('http', 'ws'),
-      WebSocket
-    )
+    this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     this.app.listener.open().then(() => {
       this.app.listener.unconfirmedAdded(faucetAddress)
         .subscribe(_ => {
@@ -187,7 +184,7 @@ export default {
         concatMap(() => mosaicService.mosaicsAmountViewFromAddress(address)),
         mergeMap(_ => _),
         filter(_ => _.mosaicInfo.id.toHex() === this.faucet.mosaicId),
-        distinctUntilChanged((prev, current) => prev.relativeAmount() === current.relativeAmount()),
+        distinctUntilChanged((prev, current) => prev.relativeAmount() === current.relativeAmount())
       )
     },
     async claim() {
@@ -203,12 +200,6 @@ export default {
           this.info(`Send your declaration.`)
           this.success(`Amount: ${resp.amount} ${this.faucet.mosaicId}`)
           this.success(`Transaction Hash: ${resp.txHash}`)
-          // const transaction = {
-          //   hash: resp.txHash,
-          //   mosaicId: this.faucet.mosaicId,
-          //   amount: resp.amount,
-          //   recipient: formData.recipient
-          // }
         })
         .catch(err => {
           const msg =

@@ -1,7 +1,7 @@
-const qs = require('querystring')
-const axios = require('axios')
-const jsJoda = require('js-joda')
-const {
+import qs from 'querystring'
+import axios from 'axios'
+import { ChronoUnit } from 'js-joda'
+import {
   Account,
   Address,
   Mosaic,
@@ -12,26 +12,27 @@ const {
   Deadline,
   ChainHttp,
   TransactionHttp,
-  MosaicHttp
-} = require('nem2-sdk')
-const rx = require('rxjs')
-const { of, forkJoin } = require('rxjs')
-const { map, mergeMap, tap, catchError } = require('rxjs/operators')
-const _ = require('lodash')
+  MosaicHttp,
+  Message,
+  NetworkType
+} from 'nem2-sdk'
+import { of, forkJoin } from 'rxjs'
+import { map, mergeMap } from 'rxjs/operators'
+import _ from 'lodash'
+import { AccountService } from '../services/account.service'
+
 _.mixin({
-  isBlank: val => {
-    return (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
-  }
+  isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
 })
 
-const { AccountService } = require('../services/account.service')
-
-const handler = conf => {
+// @ts-ignore WIP
+export const handler = conf => {
   const chainHttp = new ChainHttp(conf.API_URL)
   const mosaicHttp = new MosaicHttp(conf.API_URL)
   const transactionHttp = new TransactionHttp(conf.API_URL)
   const accountService = new AccountService(conf.API_URL)
 
+// @ts-ignore WIP
   return async (req, res, next) => {
     const { recipient, amount, message, encryption, reCaptcha } = req.body
     console.debug({ recipient, amount, message, encryption, reCaptcha })
@@ -50,6 +51,7 @@ const handler = conf => {
     }
 
     const recipientAddress = Address.createFromRawAddress(recipient)
+// @ts-ignore WIP
     const recipientAccount = new Account(recipientAddress)
     console.debug(`Recipient => %s`, recipientAccount.address.pretty())
 
@@ -78,6 +80,7 @@ const handler = conf => {
         .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
         .pipe(
           map(({ account, mosaicAmountView }) => {
+// @ts-ignore WIP
             if (mosaicAmountView.amount.compact() < conf.OUT_MAX) {
               throw new Error('The faucet has been drained.')
             }
@@ -122,6 +125,7 @@ const handler = conf => {
 
           // determine amount to pay out
           const divisibility = mosaicInfo.divisibility
+// @ts-ignore WIP
           const faucetBalance = faucetOwned.amount.compact()
           const txAbsoluteAmount =
             sanitizeAmount(amount, divisibility, conf.OUT_MAX) ||
@@ -129,7 +133,9 @@ const handler = conf => {
               faucetBalance,
               randomInRange(conf.OUT_MIN, conf.OUT_MAX, divisibility)
             )
+// @ts-ignore WIP
           console.debug(`Faucet balance => %d`, faucetOwned.relativeAmount())
+// @ts-ignore WIP
           console.debug(`Mosaic divisibility => %d`, divisibility)
           console.debug(`Input amount => %s`, amount)
           console.debug(`Payout amount => %d`, txAbsoluteAmount)
@@ -147,7 +153,9 @@ const handler = conf => {
               message,
               encryption,
               conf.FAUCET_ACCOUNT,
-              recipientAccount
+// @ts-ignore WIP
+              recipientAccount,
+              conf.NETWORK
             ),
             conf.MAX_FEE ? conf.MAX_FEE : undefined
           )
@@ -158,6 +166,7 @@ const handler = conf => {
             transferTx,
             conf.GENERATION_HASH
           )
+          console.debug("Payload:", signedTx.payload)
           return {
             signedTx,
             relativeAmount: txAbsoluteAmount / 10 ** mosaicInfo.divisibility
@@ -166,7 +175,7 @@ const handler = conf => {
         mergeMap(({ signedTx, relativeAmount }) => {
           return transactionHttp.announce(signedTx).pipe(
             mergeMap(resp => {
-              return rx.of({
+              return of({
                 resp,
                 txHash: signedTx.hash,
                 amount: relativeAmount
@@ -188,19 +197,23 @@ const handler = conf => {
 const buildMessage = (
   message = '',
   encryption = false,
-  faucetAccount,
-  publicAccount = null
+  faucetAccount: Account,
+  publicAccount?: Account,
+  network?: NetworkType
 ) => {
   console.log(publicAccount)
-  if (encryption && (publicAccount == null || publicAccount.keyPair == null)) {
+// @ts-ignore WIP
+  if (encryption && (publicAccount === undefined || publicAccount.keyPair == null)) {
     throw new Error('Required recipient public key exposed to encrypt message.')
   }
+// @ts-ignore WIP
   if (_.isBlank(message)) {
     console.debug('Empty message')
     return EmptyMessage
   } else if (encryption) {
     console.debug('Encrypt message => %s', message)
-    return faucetAccount.encryptMessage(message, publicAccount)
+// @ts-ignore WIP
+    return faucetAccount.encryptMessage(message, publicAccount, network)
   } else {
     console.debug('Plain message => %s', message)
     return PlainMessage.create(message)
@@ -208,14 +221,14 @@ const buildMessage = (
 }
 
 const buildTransferTransaction = (
-  address,
-  deadline,
-  transferrable,
-  message,
-  fee
+  address: Address,
+  deadline: number,
+  transferrable: Mosaic[],
+  message: Message,
+  fee: number
 ) => {
   return TransferTransaction.create(
-    Deadline.create(deadline, jsJoda.ChronoUnit.MINUTES),
+    Deadline.create(deadline, ChronoUnit.MINUTES),
     address,
     transferrable,
     message,
@@ -224,8 +237,8 @@ const buildTransferTransaction = (
   )
 }
 
-const requestReCaptchaValidation = async (response, secret, endpoint) => {
-  const body = qs.stringify({ response, secret })
+const requestReCaptchaValidation = async (resp: any, secret: string, endpoint: string) => {
+  const body = qs.stringify({ resp, secret })
   const headers = {
     'Content-Type': 'application/x-www-form-urlencoded'
   }
@@ -236,13 +249,13 @@ const requestReCaptchaValidation = async (response, secret, endpoint) => {
   return result.status === 200 && result.data.success
 }
 
-const randomInRange = (from, to, base) => {
-  const value = parseInt(Math.random() * (from - to + 1) + to)
+const randomInRange = (from: number, to: number, base: number) => {
+  const value = Math.random() * (from - to + 1) + to
   return base ? Math.round(value / 10 ** base) * 10 ** base : value
 }
 
-const sanitizeAmount = (amount, base, max) => {
-  const absoluteAmount = parseFloat(amount) * 10 ** base
+const sanitizeAmount = (amount: number, base: number, max: number) => {
+  const absoluteAmount = amount * 10 ** base
   if (absoluteAmount > max) {
     return max
   } else if (absoluteAmount <= 0) {
@@ -252,4 +265,4 @@ const sanitizeAmount = (amount, base, max) => {
   }
 }
 
-module.exports = handler
+export default handler
