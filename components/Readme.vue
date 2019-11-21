@@ -14,14 +14,13 @@ section.section
         li Please send back&nbsp;
           strong "{{mosaicId | prefix0x}}"
           | &nbsp;when you no longer need.
+        li Connected to&nbsp;
+          strong "{{publicUrl}}"&nbsp;
+          | ({{network}})
+        li GenHash:&nbsp;
+          strong "{{generationHash}}"
         li This is an experimental server, the spec can be change without notice.
         li Good luck! NEM development!
-
-      h3.title 📶 Node Information
-      pre
-        | Network: {{network}}
-        | API-URL: {{publicUrl}}
-        | GenerationHash: {{generationHash}}
 </template>
 
 <script>
