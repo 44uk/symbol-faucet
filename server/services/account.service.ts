@@ -41,7 +41,7 @@ export class AccountService {
 
   getTransferOutgoings(accountFrom: Account, recipient: Account, height: UInt64, wait = 10) {
     return this.accountHttp
-      .outgoingTransactions(accountFrom.address)
+      .getAccountOutgoingTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
         filter(tx => tx.type === TransactionType.TRANSFER),
@@ -59,7 +59,7 @@ export class AccountService {
 
   getTransferUnconfirmed(accountFrom: Account, recipient: Account) {
     return this.accountHttp
-      .unconfirmedTransactions(accountFrom.address)
+      .getAccountUnconfirmedTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
         filter(tx => tx.type === TransactionType.TRANSFER),

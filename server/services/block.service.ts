@@ -1,5 +1,6 @@
 import { map } from 'rxjs/operators'
 import { BlockHttp } from 'nem2-sdk'
+import { retryWithDelay } from 'server/libs/operators'
 
 export class BlockService {
   private apiUrl: string
@@ -10,9 +11,11 @@ export class BlockService {
 
   getGenerationHash() {
     const blockHttp = new BlockHttp(this.apiUrl)
-    return blockHttp
-      .getBlockByHeight(1)
-      .pipe(map(blockInfo => blockInfo.generationHash))
+    return blockHttp.getBlockByHeight("1")
+      .pipe(
+        retryWithDelay({delay: 5000}),
+        map(blockInfo => blockInfo.generationHash)
+      )
   }
 }
 

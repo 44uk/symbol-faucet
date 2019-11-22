@@ -25,7 +25,7 @@ faucet:
   # image: my-nem2-faucet # in case of built image
   image: 44uk/nem2-faucet:fushicho
   stop_signal: SIGINT
-  command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
+  command: sh -c "/bin/sleep 15 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
     - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
@@ -34,12 +34,12 @@ faucet:
     # for reading private key from addresses.yaml
     - ../../build/generated-addresses:/addresses:ro
     # for reading generation hash from block file
-    - ../../data/peer-node-0/00000:/data/00000:ro
+    - ../../data/api-node-0/00000:/data/00000:ro
   ports:
     - '4000:4000'
   depends_on:
     - rest-gateway
-    - peer-node-0
+    - api-node-0
 ```
 
 #### Using specific PrivateKey and GenerationHash

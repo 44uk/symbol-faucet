@@ -23,7 +23,9 @@ export const init = async () => {
   let generationHash = process.env.NEM_GENERATION_HASH || ""
   if (!/[0-9A-Fa-f]{64}/.test(generationHash)) {
     const blockService = new BlockService(API_URL)
-    generationHash = await blockService.getGenerationHash().toPromise()
+    generationHash = await blockService
+      .getGenerationHash()
+      .toPromise()
     if (generationHash == null) {
       throw new Error('Failed to get GenerationHash from API Node')
     }
@@ -34,7 +36,7 @@ export const init = async () => {
   if (!/[0-9A-Fa-f]{6}/.test(MOSAIC_ID)) {
     const mosaicService = new MosaicService(API_URL)
     mosaicId = await mosaicService
-      .getDistributionMosaicId(MOSAIC_ID)
+      .getLinkedMosaicId(MOSAIC_ID)
       .toPromise()
     console.info(`Get MosaicID from API Node: "${mosaicId.toHex()}"`)
   } else {

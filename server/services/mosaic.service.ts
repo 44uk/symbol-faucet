@@ -1,4 +1,5 @@
 import { NamespaceHttp, NamespaceId } from 'nem2-sdk'
+import { retryWithDelay } from 'server/libs/operators'
 
 export class MosaicService {
   private apiUrl: string
@@ -7,9 +8,12 @@ export class MosaicService {
     this.apiUrl = apiUrl
   }
 
-  getDistributionMosaicId(nsName: string) {
+  getLinkedMosaicId(nsName: string) {
     const nsHttp = new NamespaceHttp(this.apiUrl)
-    return nsHttp.getLinkedMosaicId(new NamespaceId(nsName)).pipe()
+    return nsHttp.getLinkedMosaicId(new NamespaceId(nsName))
+      .pipe(
+        retryWithDelay({delay: 5000})
+      )
   }
 }
 
