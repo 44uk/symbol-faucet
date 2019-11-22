@@ -5,16 +5,30 @@ main.section
       h2 ❗ Something went wrong.
       p(v-if="error.message") {{error.message}}
       p
-        img(src="~/assets/images/computer_error_bluescreen.png")
+        img(:src="require(`~/assets/images/${eyecatch}.png`)")
       p Try that again, and if it still doesn't work, please inform system admin.
 </template>
 
 <script>
+import _ from'lodash'
+
+        // img(:src="eyecatchSrc")
 export default {
+  head() {
+    return { title: 'Error has occured! | NEM2 Faucet' }
+  },
   props: {
     error: {
       type: Object,
       default: () => {}
+    },
+    eyecatch: {
+      type: String,
+      default: () => _.sample([
+        'computer_error_bluescreen',
+        'character_program_shutdown',
+        'computer_sagi_error'
+      ])
     }
   }
 }

@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  section.section(v-if="drained")
+  section.section(v-if="faucet.drained")
     .container
       .notification.is-warning This faucet has been drained. Sorry for inconvenience.
 
@@ -13,19 +13,19 @@ div
               b-input(v-model="form.recipient"
                 required
                 maxlength="46"
-                :pattern="recipientPattern"
-                :title="recipientPlaceholder"
-                :placeholder="recipientPlaceholder"
-                :disabled="drained"
+                :pattern="formAttribute.recipientPattern"
+                :title="formAttribute.recipientPlaceholder"
+                :placeholder="formAttribute.recipientPlaceholder"
+                :disabled="faucet.drained"
               )
           .column.is-4
             b-field(label="Amount")
               b-input(v-model.number="form.amount" type="number"
                 min="0"
-                :max="outOpt"
-                :step="step"
-                :placeholder="amountPlaceholder"
-                :disabled="drained"
+                :max="faucet.outOpt"
+                :step="faucet.step"
+                :placeholder="formAttribute.amountPlaceholder"
+                :disabled="faucet.drained"
               )
 
         .columns
@@ -34,41 +34,56 @@ div
               b-input(v-model="form.message"
                 maxlength="1023"
                 placeholder="(Optional)"
-                :disabled="drained"
+                :disabled="faucet.drained"
               )
           .column.is-4
             .columns.is-mobile
               .column.is-6
                 b-field(label="Encryption")
                   b-switch(v-model="form.encryption" style="margin-top:5px")
-                  | {{ form.encryption ? 'Encrypted' : 'Plain' }}
+                    | {{ form.encryption ? 'Encrypted' : 'Plain' }}
               .column.is-6
                 b-field(label="Submit")
-                  button(type="submit" class="button is-primary is-fullwidth" :disabled="drained || waiting")
+                  button(type="submit" class="button is-primary is-fullwidth" :disabled="faucet.drained || app.waiting")
                     span CLAIM!
 
         .columns
           .column.is-8
             b-field(label="Faucet Address")
-              b-input(:value="address" readonly :disabled="drained")
+              b-input(:value="faucet.address" readonly :disabled="faucet.drained")
           .column.is-4
             b-field(label="Faucet Balance")
-              b-input(:value="balance" type="number" readonly :disabled="drained")
+              b-input(:value="faucet.balance" type="number" readonly :disabled="faucet.drained")
 
   Readme(
-    :publicUrl="publicUrl"
-    :network="network"
-    :mosaicId="mosaicId"
-    :outMin="outMin"
-    :outMax="outMax"
+    :publicUrl="faucet.publicUrl"
+    :network="faucet.network"
+    :generationHash="faucet.generationHash"
+    :mosaicId="faucet.mosaicId"
+    :outMin="faucet.outMin"
+    :outMax="faucet.outMax"
   )
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
-import { Address, Listener } from 'nem2-sdk'
+import {
+  Address,
+  AccountHttp,
+  MosaicHttp,
+  MosaicService,
+  Listener
+} from 'nem2-sdk'
+import {
+  interval
+} from 'rxjs'
+import {
+  filter,
+  mergeMap,
+  concatMap,
+  distinctUntilChanged,
+} from 'rxjs/operators'
 
-import Readme from '~/components/Readme'
+import Readme from '@/components/Readme.vue'
 
 export default {
   name: 'Home',
@@ -77,85 +92,103 @@ export default {
   },
   data() {
     return {
+      app: {
+        waiting: false,
+        listener: null,
+        poller: null
+      },
+      faucet: {
+        drained: false,
+        network: null,
+        apiUrl: null,
+        publicUrl: null,
+        mosaicId: null,
+        outMax: null,
+        outMin: null,
+        outOpt: null,
+        step: null,
+        address: null,
+        balance: null
+      },
       form: {
         recipient: null,
         message: null,
         amount: null,
         encryption: false
-      },
-      drained: true,
-      waiting: false,
-      network: null,
-      apiUrl: null,
-      publicUrl: null,
-      mosaicId: null,
-      outMin: null,
-      outMax: null,
-      outOpt: null,
-      step: null,
-      address: null,
-      balance: null,
-      recipientPattern: null,
-      recipientPlaceholder: null,
-      amountPlaceholder: null
+      }
     }
-  },
-  computed: {
-    ...mapGetters(['attributes', 'transactions'])
   },
   asyncData({ res, store, error }) {
-    let attrs = store.getters.attributes
-    if (res && res.data) {
-      if (res.data.error) {
-        return error(res.data.error)
-      }
-      attrs = { ...attrs, ...res.data.attributes }
-      store.dispatch('setAttributes', { attributes: attrs })
-    }
-    const firstChar = attrs.address[0]
+    if (res.error) { return error(res.error) }
+    if (! res.data) { return {} }
+    const faucet = res.data.faucet
+    const firstChar = faucet.address[0]
     const recipientPattern = `^${firstChar}[ABCD].+`
-    const recipientPlaceholder = `${attrs.network} address start with a capital ${firstChar}`
-    const amountPlaceholder = `(Up to ${attrs.outOpt}. Optional, if you want fixed amount)`
+    const recipientPlaceholder = `${faucet.network} address start with a capital ${firstChar}`
+    const amountPlaceholder = `(Up to ${faucet.outOpt}. Optional, if you want fixed amount)`
     const data = {
-      ...attrs,
-      recipientPattern,
-      recipientPlaceholder,
-      amountPlaceholder
+      faucet,
+      formAttribute: {
+        recipientPattern,
+        recipientPlaceholder,
+        amountPlaceholder
+      }
     }
     console.debug('asyncData: %o', data)
     return data
   },
+  created() {
+    if (process.browser) {
+      const { recipient, amount, message, encryption } = this.$nuxt.$route.query
+      this.form = { ...this.form,
+        recipient,
+        amount,
+        message,
+        encryption: encryption && encryption.toLowerCase() === 'true'
+      }
+    }
+  },
   async mounted() {
-    const faucetAddress = Address.createFromRawAddress(this.address)
-    this.listener = new Listener(this.publicUrl.replace('http', 'ws'), WebSocket)
-    this.listener.open().then(() => {
-      // prettier-ignore
-      this.listener.unconfirmedAdded(faucetAddress)
+    const faucetAddress = Address.createFromRawAddress(this.faucet.address)
+    this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
+    this.app.listener.open().then(() => {
+      this.app.listener.unconfirmedAdded(faucetAddress)
         .subscribe(_ => {
           this.info('Your request had been unconfirmed status!')
         })
-      // prettier-ignore
-      this.listener.confirmed(faucetAddress)
+      this.app.listener.confirmed(faucetAddress)
         .subscribe(_ => {
           this.info('Your Request had been confirmed status!')
         })
     })
 
+    this.app.poller = this.accountPolling(faucetAddress)
+    this.app.poller.subscribe(
+      mosaicAmountView => this.faucet.balance = mosaicAmountView.relativeAmount()
+    )
+
     if (this.$recaptcha) {
       await this.$recaptcha.init()
     }
-    if (process.browser) {
-      const { recipient, amount, message, encryption } = this.$nuxt.$route.query
-      this.form = { ...this.form, recipient, amount, message, encryption }
-    }
   },
   beforeDestroy() {
-    this.listener.close()
+    this.app.listener != null && this.app.listener.close()
+    this.app.poller != null && this.app.poller.unsubscribe()
   },
   methods: {
-    ...mapActions(['setConfig', 'addTransaction']),
+    accountPolling(address) {
+      const accountHttp = new AccountHttp(this.faucet.publicUrl)
+      const mosaicHttp = new MosaicHttp(this.faucet.publicUrl)
+      const mosaicService = new MosaicService(accountHttp, mosaicHttp)
+      return interval(5000).pipe(
+        concatMap(() => mosaicService.mosaicsAmountViewFromAddress(address)),
+        mergeMap(_ => _),
+        filter(_ => _.mosaicInfo.id.toHex() === this.faucet.mosaicId),
+        distinctUntilChanged((prev, current) => prev.relativeAmount() === current.relativeAmount())
+      )
+    },
     async claim() {
-      this.waiting = true
+      this.app.waiting = true
       this.$router.push({ path: this.$route.path, query: this.form })
       const formData = { ...this.form }
       if (this.$recaptcha) {
@@ -165,15 +198,8 @@ export default {
         .$post('/claims', formData)
         .then(resp => {
           this.info(`Send your declaration.`)
-          this.success(`Amount: ${resp.amount} ${this.mosaicId}`)
+          this.success(`Amount: ${resp.amount} ${this.faucet.mosaicId}`)
           this.success(`Transaction Hash: ${resp.txHash}`)
-          const transaction = {
-            hash: resp.txHash,
-            mosaicId: this.mosaicId,
-            amount: resp.amount,
-            recipient: formData.recipient
-          }
-          this.addTransaction({ transaction })
         })
         .catch(err => {
           const msg =
@@ -182,7 +208,7 @@ export default {
           this.failed(`Message from server: ${msg}`)
         })
         .finally(() => {
-          this.waiting = false
+          this.app.waiting = false
         })
     },
     info(message) {

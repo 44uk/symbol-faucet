@@ -2,7 +2,7 @@ import createPersistedState from 'vuex-persistedstate'
 
 export default ({ store }) => {
   createPersistedState({
-    key: 'nem2-faucet',
-    paths: ['transactions']
+    key: '__nem2-faucet',
+    paths: []
   })(store)
 }

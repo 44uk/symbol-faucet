@@ -25,22 +25,24 @@ faucet:
   # image: my-nem2-faucet # in case of built image
   image: 44uk/nem2-faucet:fushicho
   stop_signal: SIGINT
-  command: sh -c "/bin/sleep 10 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
+  command: sh -c "/bin/sleep 15 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
     - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
+    # for reading private key from addresses.yaml
     - ../../build/generated-addresses:/addresses:ro
-    - ../../data/peer-node-0/00000:/data/00000:ro
+    # for reading generation hash from block file
+    - ../../data/api-node-0/00000:/data/00000:ro
   ports:
     - '4000:4000'
   depends_on:
     - rest-gateway
-    - peer-node-0-nemgen
+    - api-node-0
 ```
 
-#### Using specific PrivateKey
+#### Using specific PrivateKey and GenerationHash
 
 ```yaml:docker-compose.yml
 faucet:
@@ -89,6 +91,12 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 - [44uk\/nem2-faucet | Docker Hub](https://hub.docker.com/r/44uk/nem2-faucet)
 
+## :shell: Claimimg without Browser
+
+```shell
+curl http://localhost:4000/claims -d 'recipient=__YOUR_ADDRESS__'
+```
+
 ## :fire: Customize
 
 ```shell
@@ -105,10 +113,10 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 # * NEM_OUT_MIN
 # * NEM_OUT_OPT
 # * NEM_MAX_FEE
-# * NEM_MAX_TRANSACTION_DEADLINE
-# * NEM_ENOUGH_BALANCE
+# * NEM_MAX_DEADLINE
+# * NEM_MAX_BALANCE
 # * NEM_MAX_UNCONFIRMED
-# * NEM_WAIT_HEIGHT
+# * NEM_WAIT_BLOCK
 # * RECAPTCHA_CLIENT_SECRET
 # * RECAPTCHA_SERVER_SECRET
 # see .env.sample

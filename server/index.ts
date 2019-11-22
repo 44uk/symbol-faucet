@@ -1,6 +1,6 @@
-const express = require('express')
-const consola = require('consola')
-const bodyParser = require('body-parser')
+import express from 'express'
+import consola from 'consola'
+import bodyParser from 'body-parser'
 const { Nuxt, Builder } = require('nuxt')
 const app = express()
 
@@ -10,20 +10,19 @@ app.use(bodyParser.json())
 require('dotenv').config({ path: '.env' })
 
 // Import and Set Nuxt.js options
-const config = require('../nuxt.config.js')
+import config from '../nuxt.config';
 config.dev = !(process.env.NODE_ENV === 'production')
 
-const monitor = require('./monitor')
-const bootstrap = require('./bootstrap')
-const faucetHandler = require('./handlers/faucet.js')
-const claimsHandler = require('./handlers/claims.js')
+import monitor from './monitor'
+import bootstrap from './bootstrap'
+import faucetHandler from './handlers/faucet'
+import claimsHandler from './handlers/claims'
 
 process.on('unhandledRejection', console.dir)
 
 async function start() {
   // Init Nuxt.js
   const nuxt = new Nuxt(config)
-
   const { host, port } = nuxt.options.server
 
   // Build only in dev mode
@@ -34,8 +33,10 @@ async function start() {
     await nuxt.ready()
   }
 
-  app.get('/', faucetHandler(bootstrap.config))
-  app.post('/claims', claimsHandler(bootstrap.config))
+  const appConfig = await bootstrap.init()
+
+  app.get('/', faucetHandler(appConfig))
+  app.post('/claims', claimsHandler(appConfig))
 
   // Give nuxt middleware to express
   app.use(nuxt.render)
@@ -47,7 +48,7 @@ async function start() {
     badge: true
   })
 
-  const { API_URL, FAUCET_ACCOUNT } = bootstrap.config
+  const { API_URL, FAUCET_ACCOUNT } = appConfig
   monitor(API_URL, FAUCET_ACCOUNT.address)
 }
 start()

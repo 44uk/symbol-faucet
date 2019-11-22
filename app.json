@@ -22,8 +22,7 @@
     },
     "NEM_GENERATION_HASH": {
       "required": false,
-      "value": "",
-      "description": "Nemesis block hash."
+      "description": "Nemesis block hash. (if empty, fetch from node.)"
     },
     "NEM_API_URL": {
       "value": "http://catapult-api.example.com:3000",
@@ -34,7 +33,6 @@
       "description": "For link url."
     },
     "NEM_MOSAIC_FQN": {
-      "value": "cat.currency",
       "required": false,
       "description": "Distribution mosaic that linked namespace."
     },
@@ -51,13 +49,21 @@
     "NEM_OUT_OPT": {
       "required": false
     },
-    "NEM_ENOUGH_BALANCE": {
+    "NEM_MAX_FEE": {
+      "required": false,
+      "description": "Transaction Fee"
+    },
+    "NEM_DEADLINE": {
+      "required": false,
+      "description": "Transaction deadline (min)"
+    },
+    "NEM_MAX_BALANCE": {
       "value": "100000000000"
     },
     "NEM_MAX_UNCONFIRMED": {
       "value": "99"
     },
-    "NEM_WAIT_HEIGHT": {
+    "NEM_WAIT_BLOCK": {
       "value": "0"
     },
     "RECAPTCHA_CLIENT_SECRET": {
