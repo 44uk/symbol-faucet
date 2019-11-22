@@ -1,5 +1,5 @@
 import { NamespaceHttp, NamespaceId } from 'nem2-sdk'
-import { retryWithDelay } from 'server/libs/operators'
+import { retryWithDelay } from '../libs/operators'
 
 export class MosaicService {
   private apiUrl: string

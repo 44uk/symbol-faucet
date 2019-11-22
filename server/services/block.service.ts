@@ -1,6 +1,6 @@
 import { map } from 'rxjs/operators'
 import { BlockHttp } from 'nem2-sdk'
-import { retryWithDelay } from 'server/libs/operators'
+import { retryWithDelay } from '../libs/operators'
 
 export class BlockService {
   private apiUrl: string
