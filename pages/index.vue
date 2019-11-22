@@ -63,6 +63,12 @@ div
     :outMin="faucet.outMin"
     :outMax="faucet.outMax"
   )
+
+  History(
+    v-if="txHashes.length > 0"
+    :publicUrl="faucet.publicUrl"
+    :txHashes="txHashes"
+  )
 </template>
 
 <script>
@@ -84,11 +90,13 @@ import {
 } from 'rxjs/operators'
 
 import Readme from '@/components/Readme.vue'
+import History from '@/components/History.vue'
 
 export default {
   name: 'Home',
   components: {
-    Readme
+    Readme,
+    History
   },
   data() {
     return {
@@ -115,7 +123,8 @@ export default {
         message: null,
         amount: null,
         encryption: false
-      }
+      },
+      txHashes: []
     }
   },
   asyncData({ res, store, error }) {
@@ -197,6 +206,7 @@ export default {
       this.$axios
         .$post('/claims', formData)
         .then(resp => {
+          this.txHashes.unshift(resp.txHash)
           this.info(`Send your declaration.`)
           this.success(`Amount: ${resp.amount} ${this.faucet.mosaicId}`)
           this.success(`Transaction Hash: ${resp.txHash}`)
@@ -206,6 +216,7 @@ export default {
             (err.response.data && err.response.data.error) ||
             err.response.statusTest
           this.failed(`Message from server: ${msg}`)
+          this.app.waiting = false
         })
         .finally(() => {
           this.app.waiting = false
