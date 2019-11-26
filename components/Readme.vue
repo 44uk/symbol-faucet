@@ -6,6 +6,7 @@ section.section
       ul
         li You can get&nbsp;
           strong "{{mosaicId | prefix0x}}"
+          span(v-if="mosaicFQN") &nbsp;({{ mosaicFQN }})
           | &nbsp;randomly from&nbsp;
           strong {{outMin}}
           | &nbsp;to&nbsp;
@@ -13,6 +14,7 @@ section.section
           |.
         li Please send back&nbsp;
           strong "{{mosaicId | prefix0x}}"
+          span(v-if="mosaicFQN") &nbsp;({{ mosaicFQN }})
           | &nbsp;when you no longer need.
         li Connected to&nbsp;
           strong "{{publicUrl}}"&nbsp;
@@ -30,6 +32,7 @@ export default {
   },
   props: {
     mosaicId: { required: true, type: String },
+    mosaicFQN: { type: String },
     outMin: { required: true, type: Number },
     outMax: { required: true, type: Number },
     network: { required: true, type: String },
