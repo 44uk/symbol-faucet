@@ -17,7 +17,7 @@ section.section
           span(v-if="mosaicFQN") &nbsp;({{ mosaicFQN }})
           | &nbsp;when you no longer need.
         li Connected to&nbsp;
-          strong "{{publicUrl}}"&nbsp;
+          strong: a(:href="`${publicUrl}`" target="_blank") "{{publicUrl}}"&nbsp;
           | ({{network}})
         li GenHash:&nbsp;
           strong "{{generationHash}}"

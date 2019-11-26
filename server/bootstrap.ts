@@ -32,9 +32,9 @@ export const init = async () => {
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
   }
 
+  const mosaicService = new MosaicService(API_URL)
   let mosaicId: MosaicId;
   if (!/[0-9A-Fa-f]{6}/.test(MOSAIC_ID)) {
-    const mosaicService = new MosaicService(API_URL)
     mosaicId = await mosaicService
       .getLinkedMosaicId(MOSAIC_ID)
       .toPromise()
@@ -43,12 +43,18 @@ export const init = async () => {
     mosaicId = new MosaicId(MOSAIC_ID)
   }
 
+  let mosaicFQN = (await mosaicService
+    .getLinkedNames(mosaicId)
+    .toPromise()
+  ).join(",")
+  console.info(`Get Mosaic FQN from API Node: "${mosaicFQN}"`)
+
   const config = {
     API_URL,
     PUBLIC_URL: process.env.NEM_PUBLIC_URL || API_URL,
     NETWORK: process.env.NEM_NETWORK || 'MIJIN_TEST',
     GENERATION_HASH: generationHash,
-    MOSAIC_FQN,
+    MOSAIC_FQN: mosaicFQN,
     MOSAIC_HEX,
     MOSAIC_ID: mosaicId,
     OUT_MIN,
