@@ -7,6 +7,7 @@ import {
 
 import { MosaicService } from './services/mosaic.service'
 import { BlockService } from './services/block.service'
+import { NodeService } from './services/node.service'
 
 export const init = async () => {
   const API_URL = process.env.NEM_API_URL || 'http://localhost:3000'
@@ -30,6 +31,18 @@ export const init = async () => {
       throw new Error('Failed to get GenerationHash from API Node')
     }
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
+  }
+
+  let networkType = process.env.NEM_NETWORK || ""
+  if (!/(MIJIN_TEST|MIJIN|TEST_NET|MAIN_NET)/.test(networkType)) {
+    const nodeService = new NodeService(API_URL)
+    networkType = await nodeService
+      .getNetworkType()
+      .toPromise()
+    if (networkType == null) {
+      throw new Error('Failed to get NetworkType from API Node')
+    }
+    console.info(`Get NetworkType from API Node: "${networkType}"`)
   }
 
   const mosaicService = new MosaicService(API_URL)
@@ -71,8 +84,8 @@ export const init = async () => {
     RECAPTCHA_ENDPOINT: 'https://www.google.com/recaptcha/api/siteverify',
     FAUCET_ACCOUNT: Account.createFromPrivateKey(
       process.env.NEM_PRIVATE_KEY as string,
-// @ts-ignore WIP
-      NetworkType[process.env.NEM_NETWORK || 'MIJIN_TEST']
+      // @ts-ignore WIP
+      NetworkType[networkType]
     )
   }
   console.debug({ config })
