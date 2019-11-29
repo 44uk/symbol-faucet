@@ -7,6 +7,7 @@ import {
 
 import { MosaicService } from './services/mosaic.service'
 import { BlockService } from './services/block.service'
+import { NodeService } from './services/node.service'
 
 export const init = async () => {
   const API_URL = process.env.NEM_API_URL || 'http://localhost:3000'
@@ -32,9 +33,21 @@ export const init = async () => {
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
   }
 
+  let networkType = process.env.NEM_NETWORK || ""
+  if (!/(MIJIN_TEST|MIJIN|TEST_NET|MAIN_NET)/.test(networkType)) {
+    const nodeService = new NodeService(API_URL)
+    networkType = await nodeService
+      .getNetworkType()
+      .toPromise()
+    if (networkType == null) {
+      throw new Error('Failed to get NetworkType from API Node')
+    }
+    console.info(`Get NetworkType from API Node: "${networkType}"`)
+  }
+
+  const mosaicService = new MosaicService(API_URL)
   let mosaicId: MosaicId;
   if (!/[0-9A-Fa-f]{6}/.test(MOSAIC_ID)) {
-    const mosaicService = new MosaicService(API_URL)
     mosaicId = await mosaicService
       .getLinkedMosaicId(MOSAIC_ID)
       .toPromise()
@@ -43,12 +56,18 @@ export const init = async () => {
     mosaicId = new MosaicId(MOSAIC_ID)
   }
 
+  let mosaicFQN = (await mosaicService
+    .getLinkedNames(mosaicId)
+    .toPromise()
+  ).join(",")
+  console.info(`Get Mosaic FQN from API Node: "${mosaicFQN}"`)
+
   const config = {
     API_URL,
     PUBLIC_URL: process.env.NEM_PUBLIC_URL || API_URL,
     NETWORK: process.env.NEM_NETWORK || 'MIJIN_TEST',
     GENERATION_HASH: generationHash,
-    MOSAIC_FQN,
+    MOSAIC_FQN: mosaicFQN,
     MOSAIC_HEX,
     MOSAIC_ID: mosaicId,
     OUT_MIN,
@@ -65,8 +84,8 @@ export const init = async () => {
     RECAPTCHA_ENDPOINT: 'https://www.google.com/recaptcha/api/siteverify',
     FAUCET_ACCOUNT: Account.createFromPrivateKey(
       process.env.NEM_PRIVATE_KEY as string,
-// @ts-ignore WIP
-      NetworkType[process.env.NEM_NETWORK || 'MIJIN_TEST']
+      // @ts-ignore WIP
+      NetworkType[networkType]
     )
   }
   console.debug({ config })

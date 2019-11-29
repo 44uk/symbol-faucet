@@ -36,6 +36,7 @@ export const handler = conf => {
             generationHash: conf.GENERATION_HASH,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,
+            mosaicFQN: conf.MOSAIC_FQN,
             mosaicId: conf.MOSAIC_ID.toHex(),
             outMax: conf.OUT_MAX / denominator,
             outMin: conf.OUT_MIN / denominator,

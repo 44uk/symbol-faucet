@@ -59,6 +59,7 @@ div
     :publicUrl="faucet.publicUrl"
     :network="faucet.network"
     :generationHash="faucet.generationHash"
+    :mosaicFQN="faucet.mosaicFQN"
     :mosaicId="faucet.mosaicId"
     :outMin="faucet.outMin"
     :outMax="faucet.outMax"
@@ -110,6 +111,7 @@ export default {
         network: null,
         apiUrl: null,
         publicUrl: null,
+        mosaicFQN: null,
         mosaicId: null,
         outMax: null,
         outMin: null,

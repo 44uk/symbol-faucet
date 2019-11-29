@@ -13,7 +13,7 @@
 $ docker build -t my-nem2-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/nem2-faucet:fushicho
+$ docker pull 44uk/nem2-faucet:fushicho2
 ```
 
 ### Add as service
@@ -23,11 +23,10 @@ $ docker pull 44uk/nem2-faucet:fushicho
 ```yaml:docker-compose.yml
 faucet:
   # image: my-nem2-faucet # in case of built image
-  image: 44uk/nem2-faucet:fushicho
+  image: 44uk/nem2-faucet:fushicho2
   stop_signal: SIGINT
   command: sh -c "/bin/sleep 15 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
-    - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
   volumes:
@@ -46,14 +45,12 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:fushicho
+  image: 44uk/nem2-faucet:fushicho2
   stop_signal: SIGINT
   environment:
-    - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
-    - NEM_PRIVATE_KEY=__USING_SPECIFIED_PRIVATE_KEY__
-    - NEM_GENERATION_HASH=__YOUR_NETWORK_GENERATION_HASH__
+    - NEM_PRIVATE_KEY=__YOUR_PRIVATE_KEY__
   ports:
     - '4000:4000'
   depends_on:
@@ -64,15 +61,12 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:fushicho
+  image: 44uk/nem2-faucet:fushicho2
   stop_signal: SIGINT
   environment:
-    - NEM_NETWORK=MIJIN_TEST
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
-    - NEM_MOSAIC_FQN=jpn:jpy
-    - NEM_PRIVATE_KEY=__YOUR_PRIVATE_KEY__
-    - NEM_GENERATION_HASH=__YOUR_NETWORK_GENERATION_HASH__
+    - NEM_MOSAIC_FQN=3E70742C9A38ACAB
   ports:
     - '4000:4000'
   depends_on:
@@ -102,15 +96,15 @@ curl http://localhost:4000/claims -d 'recipient=__YOUR_ADDRESS__'
 ```shell
 # set enviroment variables
 # * PORT (default: 4000)
-# * NEM_NETWORK (default: MIJIN_TEST)
 # * NEM_PRIVATE_KEY (required)
-# * NEM_GENERATION_HASH (required)
 # * NEM_API_URL
 # * NEM_PUBLIC_URL
+# * NEM_NETWORK
+# * NEM_GENERATION_HASH
 # * NEM_MOSAIC_FQN (default: cat:currency)
 # * NEM_MOSAIC_HEX (for not linked mosaic)
-# * NEM_OUT_MAX
 # * NEM_OUT_MIN
+# * NEM_OUT_MAX
 # * NEM_OUT_OPT
 # * NEM_MAX_FEE
 # * NEM_MAX_DEADLINE
