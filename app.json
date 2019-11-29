@@ -3,6 +3,7 @@
   "description": "Faucet application for nem2",
   "keywords": [
     "nem",
+    "nem2",
     "catapult",
     "blockchain"
   ],
@@ -12,17 +13,9 @@
     "PORT": {
       "value": "80"
     },
-    "NEM_NETWORK": {
-      "value": "MIJIN_TEST",
-      "description": "MAIN_NET, TEST_NET, MIJIN, MIJIN_TEST"
-    },
     "NEM_PRIVATE_KEY": {
       "value": "__SET_YOUR_KEY__",
       "description": "PrivateKey of Faucet Account that you want to assign."
-    },
-    "NEM_GENERATION_HASH": {
-      "required": false,
-      "description": "Nemesis block hash. (if empty, fetch from node.)"
     },
     "NEM_API_URL": {
       "value": "http://catapult-api.example.com:3000",
@@ -30,7 +23,15 @@
     },
     "NEM_PUBLIC_URL": {
       "required": false,
-      "description": "For link url."
+      "description": "For frontend link url."
+    },
+    "NEM_NETWORK": {
+      "required": false,
+      "description": "MAIN_NET, TEST_NET, MIJIN, MIJIN_TEST (if empty, fetch from node.)"
+    },
+    "NEM_GENERATION_HASH": {
+      "required": false,
+      "description": "Nemesis block hash. (if empty, fetch from node.)"
     },
     "NEM_MOSAIC_FQN": {
       "required": false,
@@ -51,7 +52,7 @@
     },
     "NEM_MAX_FEE": {
       "required": false,
-      "description": "Transaction Fee"
+      "description": "Transaction Max Fee"
     },
     "NEM_DEADLINE": {
       "required": false,
