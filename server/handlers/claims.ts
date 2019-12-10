@@ -14,19 +14,20 @@ import {
   TransactionHttp,
   MosaicHttp,
   Message,
-  NetworkType
+  NetworkType,
+  NetworkCurrencyMosaic
 } from 'nem2-sdk'
 import { of, forkJoin } from 'rxjs'
 import { map, mergeMap } from 'rxjs/operators'
 import _ from 'lodash'
 import { AccountService } from '../services/account.service'
+import { IAppConfig } from "../bootstrap"
 
 _.mixin({
   isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
 })
 
-// @ts-ignore WIP
-export const handler = conf => {
+export const handler = (conf: IAppConfig) => {
   const chainHttp = new ChainHttp(conf.API_URL)
   const mosaicHttp = new MosaicHttp(conf.API_URL)
   const transactionHttp = new TransactionHttp(conf.API_URL)
@@ -40,7 +41,7 @@ export const handler = conf => {
     if (conf.RECAPTCHA_ENABLED) {
       const reCaptchaResult = await requestReCaptchaValidation(
         reCaptcha,
-        conf.RECAPTCHA_SERVER_SECRET,
+        conf.RECAPTCHA_SERVER_SECRET || "",
         conf.RECAPTCHA_ENDPOINT
       ).catch(_ => false)
       if (!reCaptchaResult) {
@@ -153,11 +154,10 @@ export const handler = conf => {
               message,
               encryption,
               conf.FAUCET_ACCOUNT,
-// @ts-ignore WIP
               recipientAccount,
-              conf.NETWORK
+              conf.NETWORK_TYPE
             ),
-            conf.MAX_FEE ? conf.MAX_FEE : undefined
+            conf.MAX_FEE ? conf.MAX_FEE : NetworkCurrencyMosaic.INITIAL_SUPPLY
           )
 
           console.debug(`Fee => %s`, conf.MAX_FEE)
@@ -199,9 +199,8 @@ const buildMessage = (
   encryption = false,
   faucetAccount: Account,
   publicAccount?: Account,
-  network?: NetworkType
+  networkType?: string
 ) => {
-  console.log(publicAccount)
 // @ts-ignore WIP
   if (encryption && (publicAccount === undefined || publicAccount.keyPair == null)) {
     throw new Error('Required recipient public key exposed to encrypt message.')
@@ -210,10 +209,10 @@ const buildMessage = (
   if (_.isBlank(message)) {
     console.debug('Empty message')
     return EmptyMessage
-  } else if (encryption) {
+  } else if (encryption && publicAccount && networkType) {
     console.debug('Encrypt message => %s', message)
 // @ts-ignore WIP
-    return faucetAccount.encryptMessage(message, publicAccount, network)
+    return faucetAccount.encryptMessage(message, publicAccount, NetworkType[networkType])
   } else {
     console.debug('Plain message => %s', message)
     return PlainMessage.create(message)
@@ -227,7 +226,7 @@ const buildTransferTransaction = (
   message: Message,
   fee: number
 ) => {
-  return TransferTransaction.create(
+  const tx = TransferTransaction.create(
     Deadline.create(deadline, ChronoUnit.MINUTES),
     address,
     transferrable,
@@ -235,6 +234,7 @@ const buildTransferTransaction = (
     address.networkType,
     UInt64.fromUint(fee)
   )
+  return tx
 }
 
 const requestReCaptchaValidation = async (resp: any, secret: string, endpoint: string) => {

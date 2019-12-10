@@ -1,29 +1,42 @@
 import {
   Account,
   NetworkType,
-  NetworkCurrencyMosaic,
   MosaicId
 } from 'nem2-sdk'
+
+import { env } from "./libs/env"
 
 import { MosaicService } from './services/mosaic.service'
 import { BlockService } from './services/block.service'
 import { NodeService } from './services/node.service'
 
-export const init = async () => {
-  const API_URL = process.env.NEM_API_URL || 'http://localhost:3000'
-  const MOSAIC_HEX = process.env.NEM_MOSAIC_HEX
-  const MOSAIC_FQN = process.env.NEM_MOSAIC_FQN
-  const MOSAIC_ID = MOSAIC_HEX || MOSAIC_FQN || NetworkCurrencyMosaic.NAMESPACE_ID.fullName as string
-  const OUT_MIN = parseInt(process.env.NEM_OUT_MIN || "") || 100000000
-  const OUT_MAX = parseInt(process.env.NEM_OUT_MAX || "") || 500000000
-  const OUT_OPT = parseInt(process.env.NEM_OUT_OPT || "") || (OUT_MAX + OUT_MIN) / 2
-  const RECAPTCHA_CLIENT_SECRET = process.env.RECAPTCHA_CLIENT_SECRET || undefined
-  const RECAPTCHA_SERVER_SECRET = process.env.RECAPTCHA_SERVER_SECRET || undefined
-  const RECAPTCHA_ENABLED = RECAPTCHA_CLIENT_SECRET && RECAPTCHA_SERVER_SECRET
+export interface IAppConfig {
+  PRIVATE_KEY: string | undefined
+  GENERATION_HASH: string
+  API_URL: string
+  PUBLIC_URL: string
+  NETWORK_TYPE: string
+  MOSAIC_FQN: string
+  MOSAIC_ID: MosaicId
+  OUT_MIN: number
+  OUT_MAX: number
+  OUT_OPT: number
+  MAX_FEE: number
+  MAX_DEADLINE: number
+  MAX_UNCONFIRMED: number
+  MAX_BALANCE: number
+  WAIT_BLOCK: number
+  RECAPTCHA_ENABLED: boolean
+  RECAPTCHA_CLIENT_SECRET: string | undefined
+  RECAPTCHA_SERVER_SECRET: string | undefined
+  RECAPTCHA_ENDPOINT: string
+  FAUCET_ACCOUNT: Account
+}
 
-  let generationHash = process.env.NEM_GENERATION_HASH || ""
+export const init = async () => {
+  let generationHash = env.GENERATION_HASH || ""
   if (!/[0-9A-Fa-f]{64}/.test(generationHash)) {
-    const blockService = new BlockService(API_URL)
+    const blockService = new BlockService(env.API_URL)
     generationHash = await blockService
       .getGenerationHash()
       .toPromise()
@@ -33,9 +46,9 @@ export const init = async () => {
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
   }
 
-  let networkType = process.env.NEM_NETWORK || ""
+  let networkType = env.NETWORK_TYPE
   if (!/(MIJIN_TEST|MIJIN|TEST_NET|MAIN_NET)/.test(networkType)) {
-    const nodeService = new NodeService(API_URL)
+    const nodeService = new NodeService(env.API_URL)
     networkType = await nodeService
       .getNetworkType()
       .toPromise()
@@ -45,15 +58,15 @@ export const init = async () => {
     console.info(`Get NetworkType from API Node: "${networkType}"`)
   }
 
-  const mosaicService = new MosaicService(API_URL)
+  const mosaicService = new MosaicService(env.API_URL)
   let mosaicId: MosaicId;
-  if (!/[0-9A-Fa-f]{6}/.test(MOSAIC_ID)) {
+  if (!/[0-9A-Fa-f]{6}/.test(env.MOSAIC_ID)) {
     mosaicId = await mosaicService
-      .getLinkedMosaicId(MOSAIC_ID)
+      .getLinkedMosaicId(env.MOSAIC_ID)
       .toPromise()
     console.info(`Get MosaicID from API Node: "${mosaicId.toHex()}"`)
   } else {
-    mosaicId = new MosaicId(MOSAIC_ID)
+    mosaicId = new MosaicId(env.MOSAIC_ID)
   }
 
   let mosaicFQN = (await mosaicService
@@ -62,28 +75,13 @@ export const init = async () => {
   ).join(",")
   console.info(`Get Mosaic FQN from API Node: "${mosaicFQN}"`)
 
-  const config = {
-    API_URL,
-    PUBLIC_URL: process.env.NEM_PUBLIC_URL || API_URL,
-    NETWORK: process.env.NEM_NETWORK || 'MIJIN_TEST',
+  const config: IAppConfig = { ...env,
+    NETWORK_TYPE: networkType,
     GENERATION_HASH: generationHash,
     MOSAIC_FQN: mosaicFQN,
-    MOSAIC_HEX,
     MOSAIC_ID: mosaicId,
-    OUT_MIN,
-    OUT_MAX,
-    OUT_OPT,
-    MAX_FEE: parseFloat(process.env.NEM_MAX_FEE || '') || 500000,
-    MAX_DEADLINE: parseInt(process.env.NEM_MAX_DEADLINE || '') || 5,
-    MAX_UNCONFIRMED: parseInt(process.env.NEM_MAX_UNCONFIRMED || '99'),
-    MAX_BALANCE: parseInt(process.env.NEM_MAX_BALANCE || '') || 100000000000,
-    WAIT_BLOCK: parseInt(process.env.NEM_WAIT_BLOCK || '0'),
-    RECAPTCHA_ENABLED,
-    RECAPTCHA_CLIENT_SECRET,
-    RECAPTCHA_SERVER_SECRET,
-    RECAPTCHA_ENDPOINT: 'https://www.google.com/recaptcha/api/siteverify',
     FAUCET_ACCOUNT: Account.createFromPrivateKey(
-      process.env.NEM_PRIVATE_KEY as string,
+      env.PRIVATE_KEY as string,
       // @ts-ignore WIP
       NetworkType[networkType]
     )
