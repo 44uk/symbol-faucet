@@ -1,11 +1,10 @@
 import { catchError } from 'rxjs/operators'
 import { AccountService } from '../services/account.service'
+import { IAppConfig } from "../bootstrap"
 
-// @ts-ignore WIP
-export const handler = conf => {
+export const handler = (conf: IAppConfig) => {
   const accountService = new AccountService(conf.API_URL)
-// @ts-ignore WIP
-  return (_req, res, next) => {
+  return (_req: any, res: any, next: any) => {
     accountService
       .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
       .pipe(
@@ -32,7 +31,7 @@ export const handler = conf => {
           const drained = balance < conf.OUT_MAX
           const faucet = {
             drained,
-            network: conf.NETWORK,
+            network: conf.NETWORK_TYPE,
             generationHash: conf.GENERATION_HASH,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,
