@@ -52,50 +52,49 @@ export const handler = (conf: IAppConfig) => {
     }
 
     const recipientAddress = Address.createFromRawAddress(recipient)
-// @ts-ignore WIP
+    // @ts-ignore HACK: using internal
     const recipientAccount = new Account(recipientAddress)
     console.debug(`Recipient => %s`, recipientAccount.address.pretty())
 
     const currentHeight = await chainHttp.getBlockchainHeight().toPromise()
+    console.debug(`Current Height => %s`, currentHeight)
+
     forkJoin([
       // fetch mosaic info
       mosaicHttp.getMosaic(conf.MOSAIC_ID),
       // check recipient balance
-      accountService
-        .getAccountInfoWithMosaicAmountView(recipientAccount, conf.MOSAIC_ID)
+      accountService.getAccountInfoWithMosaicAmountView(recipientAccount, conf.MOSAIC_ID)
         .pipe(
           map(({ account, mosaicAmountView }) => {
             if (
               mosaicAmountView &&
               mosaicAmountView.amount.compact() > conf.MAX_BALANCE
             ) {
-              throw new Error(
-                `Your account already has enough balance => (${mosaicAmountView.relativeAmount()})`
-              )
+              throw new Error(`Your account already has enough balance => (${mosaicAmountView.relativeAmount()})`)
             }
             return account
           })
         ),
       // check faucet balance
-      accountService
-        .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
+      accountService.getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
         .pipe(
-          map(({ account, mosaicAmountView }) => {
-// @ts-ignore WIP
-            if (mosaicAmountView.amount.compact() < conf.OUT_MAX) {
+          map(({ mosaicAmountView }) => {
+            if (
+              mosaicAmountView
+              && mosaicAmountView.amount.compact() < conf.OUT_MAX
+            ) {
               throw new Error('The faucet has been drained.')
             }
             return mosaicAmountView
           })
         ),
       // check faucet outgoing
-      accountService
-        .getTransferOutgoings(
-          conf.FAUCET_ACCOUNT,
-          recipientAccount,
-          currentHeight,
-          conf.WAIT_BLOCK
-        )
+      accountService.getTransferOutgoings(
+        conf.FAUCET_ACCOUNT,
+        recipientAccount,
+        currentHeight,
+        conf.WAIT_BLOCK
+      )
         .pipe(
           map(txes => {
             if (txes.length > 0) {
@@ -107,8 +106,7 @@ export const handler = (conf: IAppConfig) => {
           })
         ),
       // check faucet unconfirmed
-      accountService
-        .getTransferUnconfirmed(conf.FAUCET_ACCOUNT, recipientAccount)
+      accountService.getTransferUnconfirmed(conf.FAUCET_ACCOUNT, recipientAccount)
         .pipe(
           map(txes => {
             if (txes.length >= conf.MAX_UNCONFIRMED) {
@@ -122,7 +120,7 @@ export const handler = (conf: IAppConfig) => {
     ])
       .pipe(
         map(results => {
-          const [mosaicInfo, recipientAccount, faucetOwned] = results
+          const [ mosaicInfo, recipientAccount, faucetOwned ] = results
 
           // determine amount to pay out
           const divisibility = mosaicInfo.divisibility
@@ -174,13 +172,11 @@ export const handler = (conf: IAppConfig) => {
         }),
         mergeMap(({ signedTx, relativeAmount }) => {
           return transactionHttp.announce(signedTx).pipe(
-            mergeMap(resp => {
-              return of({
-                resp,
-                txHash: signedTx.hash,
-                amount: relativeAmount
-              })
-            })
+            mergeMap(resp => of({
+              resp,
+              txHash: signedTx.hash,
+              amount: relativeAmount
+            }))
           )
         })
       )
@@ -239,12 +235,10 @@ const buildTransferTransaction = (
 
 const requestReCaptchaValidation = async (resp: any, secret: string, endpoint: string) => {
   const body = qs.stringify({ resp, secret })
-  const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  }
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
   const result = await axios
     .post(endpoint, body, { headers })
-    .catch(err => err.response)
+    .catch(error => error.response)
   console.debug(result)
   return result.status === 200 && result.data.success
 }

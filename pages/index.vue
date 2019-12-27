@@ -80,14 +80,12 @@ import {
   MosaicService,
   Listener
 } from 'nem2-sdk'
-import {
-  interval
-} from 'rxjs'
+import { interval } from 'rxjs'
 import {
   filter,
   mergeMap,
   concatMap,
-  distinctUntilChanged,
+  distinctUntilChanged
 } from 'rxjs/operators'
 
 import Readme from '@/components/Readme.vue'
