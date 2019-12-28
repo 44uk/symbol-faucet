@@ -13,7 +13,7 @@ export class MosaicService {
     const nsHttp = new NamespaceHttp(this.apiUrl)
     return nsHttp.getLinkedMosaicId(new NamespaceId(nsName))
       .pipe(
-        retryWithDelay({delay: 5000})
+        retryWithDelay({ delay: 5000 })
       )
   }
 
@@ -21,7 +21,7 @@ export class MosaicService {
     const nsHttp = new NamespaceHttp(this.apiUrl)
     return nsHttp.getMosaicsNames([mosaicId])
       .pipe(
-        retryWithDelay({delay: 5000}),
+        retryWithDelay({ delay: 5000 }),
         flatMap(_ => _),
         filter(mName => mosaicId.equals(mName.mosaicId)),
         map(mName => mName.names.map(nn => nn.name))

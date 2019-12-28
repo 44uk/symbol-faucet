@@ -13,7 +13,7 @@ export class NodeService {
     const nodeHttp = new NodeHttp(this.apiUrl)
     return nodeHttp.getNodeInfo()
       .pipe(
-        retryWithDelay({delay: 5000}),
+        retryWithDelay({ delay: 5000 }),
         map(nodeInfo => NetworkType[nodeInfo.networkIdentifier])
       )
   }

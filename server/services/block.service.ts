@@ -13,7 +13,7 @@ export class BlockService {
     const blockHttp = new BlockHttp(this.apiUrl)
     return blockHttp.getBlockByHeight("1")
       .pipe(
-        retryWithDelay({delay: 5000}),
+        retryWithDelay({ delay: 5000 }),
         map(blockInfo => blockInfo.generationHash)
       )
   }

@@ -1,6 +1,6 @@
 import { catchError, map } from 'rxjs/operators'
-import { AccountService } from '../services/account.service'
 import { IAppConfig } from "../bootstrap"
+import { AccountService } from '../services/account.service'
 
 export const handler = (conf: IAppConfig) => {
   const accountService = new AccountService(conf.API_URL)

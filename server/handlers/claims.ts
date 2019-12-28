@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import qs from 'querystring'
 import axios from 'axios'
 import { ChronoUnit } from 'js-joda'
@@ -19,9 +20,8 @@ import {
 } from 'nem2-sdk'
 import { of, forkJoin } from 'rxjs'
 import { map, mergeMap } from 'rxjs/operators'
-import _ from 'lodash'
-import { AccountService } from '../services/account.service'
 import { IAppConfig } from "../bootstrap"
+import { AccountService } from '../services/account.service'
 
 _.mixin({
   isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
