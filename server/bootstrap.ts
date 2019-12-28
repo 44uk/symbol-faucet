@@ -15,7 +15,7 @@ export interface IAppConfig {
   GENERATION_HASH: string
   API_URL: string
   PUBLIC_URL: string
-  NETWORK_TYPE: string
+  NETWORK_TYPE: NetworkType
   MOSAIC_FQN: string
   MOSAIC_ID: MosaicId
   OUT_MIN: number
@@ -76,7 +76,8 @@ export const init = async () => {
   console.info(`Get Mosaic FQN from API Node: "${mosaicFQN}"`)
 
   const config: IAppConfig = { ...env,
-    NETWORK_TYPE: networkType,
+      // @ts-ignore WIP
+    NETWORK_TYPE: NetworkType[networkType],
     GENERATION_HASH: generationHash,
     MOSAIC_FQN: mosaicFQN,
     MOSAIC_ID: mosaicId,

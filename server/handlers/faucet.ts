@@ -1,9 +1,11 @@
 import { catchError, map } from 'rxjs/operators'
 import { IAppConfig } from "../bootstrap"
 import { AccountService } from '../services/account.service'
+import { NetworkType } from 'nem2-sdk'
 
 export const handler = (conf: IAppConfig) => {
-  const accountService = new AccountService(conf.API_URL)
+  const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
+
   return (_req: any, res: any, next: any) => {
     accountService.getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
       .pipe(
@@ -31,7 +33,7 @@ export const handler = (conf: IAppConfig) => {
           const drained = balance < conf.OUT_MAX
           const faucet = {
             drained,
-            network: conf.NETWORK_TYPE,
+            network: NetworkType[conf.NETWORK_TYPE],
             generationHash: conf.GENERATION_HASH,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,

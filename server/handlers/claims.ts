@@ -29,9 +29,9 @@ _.mixin({
 
 export const handler = (conf: IAppConfig) => {
   const chainHttp = new ChainHttp(conf.API_URL)
-  const mosaicHttp = new MosaicHttp(conf.API_URL)
+  const mosaicHttp = new MosaicHttp(conf.API_URL, conf.NETWORK_TYPE)
   const transactionHttp = new TransactionHttp(conf.API_URL)
-  const accountService = new AccountService(conf.API_URL)
+  const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
 
 // @ts-ignore WIP
   return async (req, res, next) => {
@@ -195,7 +195,7 @@ const buildMessage = (
   encryption = false,
   faucetAccount: Account,
   publicAccount?: Account,
-  networkType?: string
+  networkType?: NetworkType
 ) => {
 // @ts-ignore WIP
   if (encryption && (publicAccount === undefined || publicAccount.keyPair == null)) {
@@ -208,7 +208,7 @@ const buildMessage = (
   } else if (encryption && publicAccount && networkType) {
     console.debug('Encrypt message => %s', message)
 // @ts-ignore WIP
-    return faucetAccount.encryptMessage(message, publicAccount, NetworkType[networkType])
+    return faucetAccount.encryptMessage(message, publicAccount, networkType)
   } else {
     console.debug('Plain message => %s', message)
     return PlainMessage.create(message)
