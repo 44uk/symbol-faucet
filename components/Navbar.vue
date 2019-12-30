@@ -13,12 +13,8 @@ nav.navbar.header.is-dark.has-shadow(role="navigation" aria-label="main navigati
 
 <style lang="stylus">
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 .navbar-brand:hover .nem-logo {
   animation: spin 0.20s linear infinite;
