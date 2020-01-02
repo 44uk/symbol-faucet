@@ -10,13 +10,9 @@ main.section
 </template>
 
 <script>
-import _ from'lodash'
+import _ from 'lodash'
 
-        // img(:src="eyecatchSrc")
 export default {
-  head() {
-    return { title: 'Error has occured! | NEM2 Faucet' }
-  },
   props: {
     error: {
       type: Object,
@@ -24,12 +20,11 @@ export default {
     },
     eyecatch: {
       type: String,
-      default: () => _.sample([
-        'computer_error_bluescreen',
-        'character_program_shutdown',
-        'computer_sagi_error'
-      ])
+      default: () => _.sample(['computer_error_bluescreen', 'character_program_shutdown', 'computer_sagi_error'])
     }
+  },
+  head() {
+    return { title: 'Error has occured! | NEM2 Faucet' }
   }
 }
 </script>

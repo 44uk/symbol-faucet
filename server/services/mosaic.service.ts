@@ -1,27 +1,31 @@
-import { NamespaceHttp, NamespaceId, MosaicId } from 'nem2-sdk'
+import { NamespaceHttp, NamespaceId, MosaicId, NetworkType } from 'nem2-sdk'
 import { retryWithDelay } from '../libs/operators'
 import { flatMap, filter, map } from 'rxjs/operators'
 
 export class MosaicService {
   private apiUrl: string
+  private networkType: NetworkType | undefined
 
-  constructor(apiUrl: string) {
+  private nsHttp: NamespaceHttp
+
+  constructor(apiUrl: string, networkType?: NetworkType) {
     this.apiUrl = apiUrl
+    this.networkType = networkType
+
+    this.nsHttp = new NamespaceHttp(this.apiUrl, this.networkType)
   }
 
   getLinkedMosaicId(nsName: string) {
-    const nsHttp = new NamespaceHttp(this.apiUrl)
-    return nsHttp.getLinkedMosaicId(new NamespaceId(nsName))
+    return this.nsHttp.getLinkedMosaicId(new NamespaceId(nsName))
       .pipe(
-        retryWithDelay({delay: 5000})
+        retryWithDelay({ delay: 5000 })
       )
   }
 
   getLinkedNames(mosaicId: MosaicId) {
-    const nsHttp = new NamespaceHttp(this.apiUrl)
-    return nsHttp.getMosaicsNames([mosaicId])
+    return this.nsHttp.getMosaicsNames([mosaicId])
       .pipe(
-        retryWithDelay({delay: 5000}),
+        retryWithDelay({ delay: 5000 }),
         flatMap(_ => _),
         filter(mName => mosaicId.equals(mName.mosaicId)),
         map(mName => mName.names.map(nn => nn.name))

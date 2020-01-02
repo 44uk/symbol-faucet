@@ -73,22 +73,9 @@ div
 </template>
 
 <script>
-import {
-  Address,
-  AccountHttp,
-  MosaicHttp,
-  MosaicService,
-  Listener
-} from 'nem2-sdk'
-import {
-  interval
-} from 'rxjs'
-import {
-  filter,
-  mergeMap,
-  concatMap,
-  distinctUntilChanged,
-} from 'rxjs/operators'
+import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'nem2-sdk'
+import { interval } from 'rxjs'
+import { filter, mergeMap, concatMap, distinctUntilChanged } from 'rxjs/operators'
 
 import Readme from '@/components/Readme.vue'
 import History from '@/components/History.vue'
@@ -98,6 +85,25 @@ export default {
   components: {
     Readme,
     History
+  },
+  asyncData({ res, store, error }) {
+    if (res.error) return error(res.error)
+    if (!res.data) return {}
+    const faucet = res.data.faucet
+    const firstChar = faucet.address[0]
+    const recipientPattern = `^${firstChar}[ABCD].+`
+    const recipientPlaceholder = `${faucet.network} address start with a capital ${firstChar}`
+    const amountPlaceholder = `(Up to ${faucet.outOpt}. Optional, if you want fixed amount)`
+    const data = {
+      faucet,
+      formAttribute: {
+        recipientPattern,
+        recipientPlaceholder,
+        amountPlaceholder
+      }
+    }
+    console.debug('asyncData: %o', data)
+    return data
   },
   data() {
     return {
@@ -129,29 +135,11 @@ export default {
       txHashes: []
     }
   },
-  asyncData({ res, store, error }) {
-    if (res.error) { return error(res.error) }
-    if (! res.data) { return {} }
-    const faucet = res.data.faucet
-    const firstChar = faucet.address[0]
-    const recipientPattern = `^${firstChar}[ABCD].+`
-    const recipientPlaceholder = `${faucet.network} address start with a capital ${firstChar}`
-    const amountPlaceholder = `(Up to ${faucet.outOpt}. Optional, if you want fixed amount)`
-    const data = {
-      faucet,
-      formAttribute: {
-        recipientPattern,
-        recipientPlaceholder,
-        amountPlaceholder
-      }
-    }
-    console.debug('asyncData: %o', data)
-    return data
-  },
   created() {
     if (process.browser) {
       const { recipient, amount, message, encryption } = this.$nuxt.$route.query
-      this.form = { ...this.form,
+      this.form = {
+        ...this.form,
         recipient,
         amount,
         message,
@@ -163,20 +151,16 @@ export default {
     const faucetAddress = Address.createFromRawAddress(this.faucet.address)
     this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     this.app.listener.open().then(() => {
-      this.app.listener.unconfirmedAdded(faucetAddress)
-        .subscribe(_ => {
-          this.info('Your request had been unconfirmed status!')
-        })
-      this.app.listener.confirmed(faucetAddress)
-        .subscribe(_ => {
-          this.info('Your Request had been confirmed status!')
-        })
+      this.app.listener.unconfirmedAdded(faucetAddress).subscribe(_ => {
+        this.info('Your request had been unconfirmed status!')
+      })
+      this.app.listener.confirmed(faucetAddress).subscribe(_ => {
+        this.info('Your Request had been confirmed status!')
+      })
     })
 
     this.app.poller = this.accountPolling(faucetAddress)
-    this.app.poller.subscribe(
-      mosaicAmountView => this.faucet.balance = mosaicAmountView.relativeAmount()
-    )
+    this.app.poller.subscribe(mosaicAmountView => (this.faucet.balance = mosaicAmountView.relativeAmount()))
 
     if (this.$recaptcha) {
       await this.$recaptcha.init()
@@ -214,9 +198,7 @@ export default {
           this.success(`Transaction Hash: ${resp.txHash}`)
         })
         .catch(err => {
-          const msg =
-            (err.response.data && err.response.data.error) ||
-            err.response.statusTest
+          const msg = (err.response.data && err.response.data.error) || err.response.statusTest
           this.failed(`Message from server: ${msg}`)
           this.app.waiting = false
         })

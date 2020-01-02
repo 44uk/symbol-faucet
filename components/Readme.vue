@@ -28,16 +28,16 @@ section.section
 <script>
 export default {
   filters: {
-    prefix0x: (val) => (/[0-9A-Fa-f]{16}/.test(val) ? `0x${val}` : val)
+    prefix0x: val => (/[0-9A-Fa-f]{16}/.test(val) ? `0x${val}` : val)
   },
   props: {
     mosaicId: { required: true, type: String },
-    mosaicFQN: { type: String },
+    mosaicFQN: { type: String, default: '' },
     outMin: { required: true, type: Number },
     outMax: { required: true, type: Number },
     network: { required: true, type: String },
     publicUrl: { required: true, type: String },
-    generationHash: { required: true, type: String },
+    generationHash: { required: true, type: String }
   }
 }
 </script>

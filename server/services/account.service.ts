@@ -7,19 +7,24 @@ import {
   MosaicId,
   UInt64,
   TransferTransaction,
+  NetworkType,
 } from 'nem2-sdk'
 import { of } from 'rxjs'
 import { map, mergeMap, filter, catchError, toArray } from 'rxjs/operators'
 
 export class AccountService {
   private apiUrl: string
+  private networkType: NetworkType | undefined
+
   private accountHttp: AccountHttp
   private mosaicHttp: MosaicHttp
 
-  constructor(apiUrl: string) {
+  constructor(apiUrl: string, networkType?: NetworkType) {
     this.apiUrl = apiUrl
-    this.accountHttp = new AccountHttp(apiUrl)
-    this.mosaicHttp = new MosaicHttp(apiUrl)
+    this.networkType = networkType
+
+    this.accountHttp = new AccountHttp(this.apiUrl)
+    this.mosaicHttp = new MosaicHttp(this.apiUrl, this.networkType)
   }
 
   getAccountInfoWithMosaicAmountView(account: Account, mosaicId: MosaicId) {

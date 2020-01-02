@@ -1,21 +1,25 @@
-import { catchError } from 'rxjs/operators'
-import { AccountService } from '../services/account.service'
+import { catchError, map } from 'rxjs/operators'
 import { IAppConfig } from "../bootstrap"
+import { AccountService } from '../services/account.service'
+import { NetworkType } from 'nem2-sdk'
 
 export const handler = (conf: IAppConfig) => {
-  const accountService = new AccountService(conf.API_URL)
+  const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
+
   return (_req: any, res: any, next: any) => {
-    accountService
-      .getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
+    accountService.getAccountInfoWithMosaicAmountView(conf.FAUCET_ACCOUNT, conf.MOSAIC_ID)
       .pipe(
+        map(info => {
+          console.debug({ info })
+          if(info.mosaicAmountView) return info
+          else throw new Error(`{"statusCode": 200, "body": {"message": "The account has no mosaic for distributtion."}}`)
+        }),
         catchError(error => {
           if (error.code === 'ECONNREFUSED') {
             throw new Error(error.message)
           } else if (error.message) {
-            const errorInfo = JSON.parse(error.message)
-            throw new Error(
-              `${errorInfo.statusCode}: ${errorInfo.body.message}`
-            )
+            const eInfo = JSON.parse(error.message)
+            throw new Error(`${eInfo.statusCode}: ${eInfo.body.message}`)
           } else {
             throw new Error(error)
           }
@@ -24,14 +28,12 @@ export const handler = (conf: IAppConfig) => {
       .subscribe(
         info => {
           const { account, mosaicAmountView } = info
-// @ts-ignore WIP
           const denominator = 10 ** mosaicAmountView.mosaicInfo.divisibility
-// @ts-ignore WIP
           const balance = mosaicAmountView.amount.compact()
           const drained = balance < conf.OUT_MAX
           const faucet = {
             drained,
-            network: conf.NETWORK_TYPE,
+            network: NetworkType[conf.NETWORK_TYPE],
             generationHash: conf.GENERATION_HASH,
             apiUrl: conf.API_URL,
             publicUrl: conf.PUBLIC_URL || conf.API_URL,
