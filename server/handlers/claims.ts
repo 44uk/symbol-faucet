@@ -21,7 +21,7 @@ import {
 import { of, forkJoin } from 'rxjs'
 import { map, mergeMap } from 'rxjs/operators'
 import { IAppConfig } from "../bootstrap"
-import { AccountService } from '../services/account.service'
+import { AccountService } from '../services'
 
 _.mixin({
   isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)

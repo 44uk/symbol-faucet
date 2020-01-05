@@ -4,11 +4,13 @@ import {
   MosaicId
 } from 'nem2-sdk'
 
-import { env } from "./libs/env"
+import { env } from "./libs"
 
-import { MosaicService } from './services/mosaic.service'
-import { BlockService } from './services/block.service'
-import { NodeService } from './services/node.service'
+import {
+  MosaicService,
+  BlockService,
+  NodeService
+} from './services'
 
 export interface IAppConfig {
   PRIVATE_KEY: string | undefined

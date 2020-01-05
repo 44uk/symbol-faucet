@@ -1,6 +1,6 @@
 import { catchError, map } from 'rxjs/operators'
 import { IAppConfig } from "../bootstrap"
-import { AccountService } from '../services/account.service'
+import { AccountService } from '../services'
 import { NetworkType } from 'nem2-sdk'
 
 export const handler = (conf: IAppConfig) => {
