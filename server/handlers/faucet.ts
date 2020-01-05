@@ -12,7 +12,11 @@ export const handler = (conf: IAppConfig) => {
         map(info => {
           console.debug({ info })
           if(info.mosaicAmountView) return info
-          else throw new Error(`{"statusCode": 200, "body": {"message": "The account has no mosaic for distributtion."}}`)
+          const error = JSON.stringify({
+            statusCode: 404,
+            body: { message: `The account(${conf.FAUCET_ACCOUNT.address.pretty()}) has no mosaic for distribution.` }
+          })
+          throw new Error(error)
         }),
         catchError(error => {
           if (error.code === 'ECONNREFUSED') {

@@ -75,7 +75,7 @@ export const init = async () => {
     .getLinkedNames(mosaicId)
     .toPromise()
   ).join(",")
-  console.info(`Get Mosaic FQN from API Node: "${mosaicFQN}"`)
+  console.info(`Get MosaicFQN from API Node: "${mosaicFQN}"`)
 
   const config: IAppConfig = { ...env,
       // @ts-ignore WIP

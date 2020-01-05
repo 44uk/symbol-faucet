@@ -22,7 +22,7 @@ const {
 
 const API_URL = NEM_API_URL || "http://localhost:3000"
 const PUBLIC_URL = NEM_PUBLIC_URL || API_URL
-const NETWORK_TYPE = NEM_NETWORK || "MIJIN_TEST"
+const NETWORK_TYPE = NEM_NETWORK || ""
 const MOSAIC_HEX = NEM_MOSAIC_HEX
 const MOSAIC_FQN = NEM_MOSAIC_FQN
 const MOSAIC_ID = MOSAIC_HEX || MOSAIC_FQN || NetworkCurrencyMosaic.NAMESPACE_ID.fullName as string

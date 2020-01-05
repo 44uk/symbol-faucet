@@ -1,7 +1,7 @@
-import _ from 'lodash'
-import qs from 'querystring'
-import axios from 'axios'
-import { ChronoUnit } from 'js-joda'
+import _ from "lodash"
+import qs from "querystring"
+import axios from "axios"
+import { ChronoUnit } from "js-joda"
 import {
   Account,
   Address,
@@ -17,11 +17,11 @@ import {
   Message,
   NetworkType,
   NetworkCurrencyMosaic
-} from 'nem2-sdk'
-import { of, forkJoin } from 'rxjs'
-import { map, mergeMap } from 'rxjs/operators'
+} from "nem2-sdk"
+import { of, forkJoin } from "rxjs"
+import { map, mergeMap } from "rxjs/operators"
 import { IAppConfig } from "../bootstrap"
-import { AccountService } from '../services'
+import { AccountService } from "../services"
 
 _.mixin({
   isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
@@ -33,8 +33,7 @@ export const handler = (conf: IAppConfig) => {
   const transactionHttp = new TransactionHttp(conf.API_URL)
   const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
 
-// @ts-ignore WIP
-  return async (req, res, next) => {
+  return async (req: any, res: any, next: any) => {
     const { recipient, amount, message, encryption, reCaptcha } = req.body
     console.debug({ recipient, amount, message, encryption, reCaptcha })
 
@@ -45,10 +44,10 @@ export const handler = (conf: IAppConfig) => {
         conf.RECAPTCHA_ENDPOINT
       ).catch(_ => false)
       if (!reCaptchaResult) {
-        return res.status(422).json({ error: 'Failed ReCaptcha.' })
+        return res.status(422).json({ error: "Failed ReCaptcha." })
       }
     } else {
-      console.debug('Disabled ReCaptcha')
+      console.debug("Disabled ReCaptcha")
     }
 
     const recipientAddress = Address.createFromRawAddress(recipient)
@@ -83,7 +82,7 @@ export const handler = (conf: IAppConfig) => {
               mosaicAmountView
               && mosaicAmountView.amount.compact() < conf.OUT_MAX
             ) {
-              throw new Error('The faucet has been drained.')
+              throw new Error("The faucet has been drained.")
             }
             return mosaicAmountView
           })
@@ -191,7 +190,7 @@ export const handler = (conf: IAppConfig) => {
 }
 
 const buildMessage = (
-  message = '',
+  message = "",
   encryption = false,
   faucetAccount: Account,
   publicAccount?: Account,
@@ -199,18 +198,18 @@ const buildMessage = (
 ) => {
 // @ts-ignore WIP
   if (encryption && (publicAccount === undefined || publicAccount.keyPair == null)) {
-    throw new Error('Required recipient public key exposed to encrypt message.')
+    throw new Error("Required recipient public key exposed to encrypt message.")
   }
 // @ts-ignore WIP
   if (_.isBlank(message)) {
-    console.debug('Empty message')
+    console.debug("Empty message")
     return EmptyMessage
   } else if (encryption && publicAccount && networkType) {
-    console.debug('Encrypt message => %s', message)
+    console.debug("Encrypt message => %s", message)
 // @ts-ignore WIP
     return faucetAccount.encryptMessage(message, publicAccount, networkType)
   } else {
-    console.debug('Plain message => %s', message)
+    console.debug("Plain message => %s", message)
     return PlainMessage.create(message)
   }
 }
@@ -235,7 +234,7 @@ const buildTransferTransaction = (
 
 const requestReCaptchaValidation = async (resp: any, secret: string, endpoint: string) => {
   const body = qs.stringify({ resp, secret })
-  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+  const headers = { "Content-Type": "application/x-www-form-urlencoded" }
   const result = await axios
     .post(endpoint, body, { headers })
     .catch(error => error.response)
