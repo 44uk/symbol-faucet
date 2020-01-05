@@ -143,6 +143,12 @@ export const handler = (conf: IAppConfig) => {
             UInt64.fromUint(txAbsoluteAmount)
           )
 
+          const feeFactor = [
+            conf.FEE_MULTIPLIER,
+            conf.MAX_FEE,
+            NetworkCurrencyMosaic.INITIAL_SUPPLY
+          ].find(_ => !!_) as number
+          const isMultipler = !!conf.FEE_MULTIPLIER
           const transferTx = buildTransferTransaction(
             recipientAccount.address,
             conf.MAX_DEADLINE,
@@ -154,10 +160,11 @@ export const handler = (conf: IAppConfig) => {
               recipientAccount,
               conf.NETWORK_TYPE
             ),
-            conf.MAX_FEE ? conf.MAX_FEE : NetworkCurrencyMosaic.INITIAL_SUPPLY
+            feeFactor,
+            isMultipler
           )
 
-          console.debug(`Fee => %s`, conf.MAX_FEE)
+          console.debug(`FeeFactor => %s`, feeFactor)
           console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)
           const signedTx = conf.FAUCET_ACCOUNT.sign(
             transferTx,
@@ -219,16 +226,20 @@ const buildTransferTransaction = (
   deadline: number,
   transferrable: Mosaic[],
   message: Message,
-  fee: number
+  feeFactor: number,
+  isMultiplier = false
 ) => {
-  const tx = TransferTransaction.create(
+  let tx = TransferTransaction.create(
     Deadline.create(deadline, ChronoUnit.MINUTES),
     address,
     transferrable,
     message,
     address.networkType,
-    UInt64.fromUint(fee)
+    UInt64.fromUint(feeFactor)
   )
+  if(isMultiplier) {
+    tx = tx.setMaxFee(feeFactor) as TransferTransaction
+  }
   return tx
 }
 

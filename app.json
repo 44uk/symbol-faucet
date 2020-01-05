@@ -50,6 +50,9 @@
     "NEM_OUT_OPT": {
       "required": false
     },
+    "NEM_FEE_MULTIPLIER": {
+      "required": false,
+    },
     "NEM_MAX_FEE": {
       "required": false,
       "description": "Transaction Max Fee"

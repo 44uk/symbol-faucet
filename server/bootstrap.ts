@@ -23,7 +23,8 @@ export interface IAppConfig {
   OUT_MIN: number
   OUT_MAX: number
   OUT_OPT: number
-  MAX_FEE: number
+  FEE_MULTIPLIER: number | undefined
+  MAX_FEE: number | undefined
   MAX_DEADLINE: number
   MAX_UNCONFIRMED: number
   MAX_BALANCE: number
