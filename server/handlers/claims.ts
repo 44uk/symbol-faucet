@@ -143,12 +143,12 @@ export const handler = (conf: IAppConfig) => {
             UInt64.fromUint(txAbsoluteAmount)
           )
 
+          const isMultipler = !!conf.FEE_MULTIPLIER
           const feeFactor = [
             conf.FEE_MULTIPLIER,
             conf.MAX_FEE,
-            NetworkCurrencyMosaic.INITIAL_SUPPLY
+            5000000 // TODO: set network multipler
           ].find(_ => !!_) as number
-          const isMultipler = !!conf.FEE_MULTIPLIER
           const transferTx = buildTransferTransaction(
             recipientAccount.address,
             conf.MAX_DEADLINE,
@@ -164,7 +164,7 @@ export const handler = (conf: IAppConfig) => {
             isMultipler
           )
 
-          console.debug(`FeeFactor => %s`, feeFactor)
+          console.debug(`FeeFactor => %s, Multipler => %s`, feeFactor, isMultipler)
           console.debug(`Generation Hash => %s`, conf.GENERATION_HASH)
           const signedTx = conf.FAUCET_ACCOUNT.sign(
             transferTx,
