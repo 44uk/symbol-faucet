@@ -16,12 +16,13 @@ import {
   MosaicHttp,
   Message,
   NetworkType,
-  NetworkCurrencyMosaic
 } from "nem2-sdk"
 import { of, forkJoin } from "rxjs"
 import { map, mergeMap } from "rxjs/operators"
 import { IAppConfig } from "../bootstrap"
 import { AccountService } from "../services"
+
+// import "../patch/Deadline"
 
 _.mixin({
   isBlank: val => (_.isEmpty(val) && !_.isNumber(val)) || _.isNaN(val)
