@@ -15,7 +15,7 @@ export default {
     Footer
   },
   head() {
-    return { title: 'NEM2 Faucet' }
+    return { title: 'SYMBOL Faucet' }
   }
 }
 </script>
