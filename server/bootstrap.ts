@@ -49,24 +49,29 @@ export const init = async () => {
     console.info(`Get GenerationHash from API Node: "${generationHash}"`)
   }
 
-  let networkType = env.NETWORK_TYPE
+  let networkType = env.NETWORK_TYPE || ""
   if (!/(MIJIN_TEST|MIJIN|TEST_NET|MAIN_NET)/.test(networkType)) {
     const nodeService = new NodeService(env.API_URL)
     networkType = await nodeService
       .getNetworkType()
       .toPromise()
-    if (networkType == null) {
+      .catch(error => "")
+    if (networkType === "") {
       throw new Error('Failed to get NetworkType from API Node')
     }
     console.info(`Get NetworkType from API Node: "${networkType}"`)
   }
 
   const mosaicService = new MosaicService(env.API_URL)
-  let mosaicId: MosaicId;
+  let mosaicId: MosaicId | null
   if (!/[0-9A-Fa-f]{6}/.test(env.MOSAIC_ID)) {
     mosaicId = await mosaicService
       .getLinkedMosaicId(env.MOSAIC_ID)
       .toPromise()
+      .catch(error => null)
+    if (mosaicId == null) {
+      throw new Error('Failed to get MosaicID from API Node')
+    }
     console.info(`Get MosaicID from API Node: "${mosaicId.toHex()}"`)
   } else {
     mosaicId = new MosaicId(env.MOSAIC_ID)
