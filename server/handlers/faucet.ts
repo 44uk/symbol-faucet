@@ -1,7 +1,7 @@
-import { catchError, map } from 'rxjs/operators'
+import { catchError, map } from "rxjs/operators"
 import { IAppConfig } from "../bootstrap"
-import { AccountService } from '../services/account.service'
-import { NetworkType } from 'nem2-sdk'
+import { AccountService } from "../services"
+import { NetworkType } from "nem2-sdk"
 
 export const handler = (conf: IAppConfig) => {
   const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
@@ -12,10 +12,14 @@ export const handler = (conf: IAppConfig) => {
         map(info => {
           console.debug({ info })
           if(info.mosaicAmountView) return info
-          else throw new Error(`{"statusCode": 200, "body": {"message": "The account has no mosaic for distributtion."}}`)
+          const error = JSON.stringify({
+            statusCode: 404,
+            body: { message: `The account(${conf.FAUCET_ACCOUNT.address.pretty()}) has no mosaic for distribution.` }
+          })
+          throw new Error(error)
         }),
         catchError(error => {
-          if (error.code === 'ECONNREFUSED') {
+          if (error.code === "ECONNREFUSED") {
             throw new Error(error.message)
           } else if (error.message) {
             const eInfo = JSON.parse(error.message)

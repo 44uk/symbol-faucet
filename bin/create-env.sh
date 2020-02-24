@@ -8,6 +8,13 @@ if [ -f $FILEPATH ]; then
   echo "NEM_PRIVATE_KEY=$PRIVATE_KEY" > .env
 fi
 
+# get min fee multiplier from generated config
+CONFIGPATH=/userconfig/resources/config-node.properties
+if [ -f $CONFIGPATH ]; then
+  MIN_FEE_MULTIPLIER=$(grep -oE "minFeeMultiplier\s*=\s*(\d+)" /userconfig/resources/config-node.properties | awk 'match($0,/[0-9]+/){print substr($0,RSTART,RLENGTH)}')
+  echo "NEM_FEE_MULTIPLIER=$MIN_FEE_MULTIPLIER" >> .env
+fi
+
 # get generation hash from generated block
 BLOCKPATH=/data/00000/00001.dat
 if [ -f $BLOCKPATH ]; then

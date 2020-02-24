@@ -11,6 +11,7 @@ const {
   NEM_OUT_MIN,
   NEM_OUT_MAX,
   NEM_OUT_OPT,
+  NEM_FEE_MULTIPLIER,
   NEM_MAX_FEE,
   NEM_MAX_DEADLINE,
   NEM_MAX_BALANCE,
@@ -22,7 +23,7 @@ const {
 
 const API_URL = NEM_API_URL || "http://localhost:3000"
 const PUBLIC_URL = NEM_PUBLIC_URL || API_URL
-const NETWORK_TYPE = NEM_NETWORK || "MIJIN_TEST"
+const NETWORK_TYPE = NEM_NETWORK || ""
 const MOSAIC_HEX = NEM_MOSAIC_HEX
 const MOSAIC_FQN = NEM_MOSAIC_FQN
 const MOSAIC_ID = MOSAIC_HEX || MOSAIC_FQN || NetworkCurrencyMosaic.NAMESPACE_ID.fullName as string
@@ -44,7 +45,8 @@ export const env = {
   OUT_MIN,
   OUT_MAX,
   OUT_OPT,
-  MAX_FEE: parseFloat(NEM_MAX_FEE || "") || 500000,
+  FEE_MULTIPLIER: parseFloat(NEM_FEE_MULTIPLIER || "") || undefined,
+  MAX_FEE: parseFloat(NEM_MAX_FEE || "") || undefined,
   MAX_DEADLINE: parseInt(NEM_MAX_DEADLINE || "") || 5,
   MAX_UNCONFIRMED: parseInt(NEM_MAX_UNCONFIRMED || "") || 99,
   MAX_BALANCE: parseInt(NEM_MAX_BALANCE || "") || 100000000000,

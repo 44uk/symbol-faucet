@@ -106,6 +106,7 @@ curl http://localhost:4000/claims -d 'recipient=__YOUR_ADDRESS__'
 # * NEM_OUT_MIN
 # * NEM_OUT_MAX
 # * NEM_OUT_OPT
+# * NEM_FEE_MULTIPLIER
 # * NEM_MAX_FEE
 # * NEM_MAX_DEADLINE
 # * NEM_MAX_BALANCE
