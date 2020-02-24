@@ -1,4 +1,4 @@
-import { NetworkCurrencyMosaic } from "nem2-sdk"
+import { NetworkCurrencyLocal } from "nem2-sdk"
 
 const {
   NEM_NETWORK,
@@ -26,7 +26,7 @@ const PUBLIC_URL = NEM_PUBLIC_URL || API_URL
 const NETWORK_TYPE = NEM_NETWORK || ""
 const MOSAIC_HEX = NEM_MOSAIC_HEX
 const MOSAIC_FQN = NEM_MOSAIC_FQN
-const MOSAIC_ID = MOSAIC_HEX || MOSAIC_FQN || NetworkCurrencyMosaic.NAMESPACE_ID.fullName as string
+const MOSAIC_ID = MOSAIC_HEX || MOSAIC_FQN || NetworkCurrencyLocal.NAMESPACE_ID.fullName as string
 const OUT_MIN = parseInt(NEM_OUT_MIN || "") || 100000000
 const OUT_MAX = parseInt(NEM_OUT_MAX || "") || 500000000
 const OUT_OPT = parseInt(NEM_OUT_OPT || "") || (OUT_MAX + OUT_MIN) / 2
