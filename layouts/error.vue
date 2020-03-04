@@ -24,7 +24,7 @@ export default {
     }
   },
   head() {
-    return { title: 'Error has occured! | NEM2 Faucet' }
+    return { title: 'Error has occured! | SYMBOL Faucet' }
   }
 }
 </script>
