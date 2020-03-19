@@ -1,5 +1,5 @@
 <template lang="pug">
-footer.footer
+footer.footer.symbolFooter
   .content.has-text-centered
     h4 💪 Powered by
     p
