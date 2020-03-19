@@ -44,7 +44,7 @@ div
                     | {{ form.encryption ? 'Encrypted' : 'Plain' }}
               .column.is-6
                 b-field(label="Submit")
-                  button(type="submit" class="button is-primary is-fullwidth" :disabled="faucet.drained || app.waiting")
+                  button(type="submit" class="symbol-button button is-primary is-fullwidth" :disabled="faucet.drained || app.waiting")
                     span CLAIM!
 
         .columns
@@ -73,7 +73,7 @@ div
 </template>
 
 <script>
-import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'nem2-sdk'
+import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'symbol-sdk'
 import { interval } from 'rxjs'
 import { filter, mergeMap, concatMap, distinctUntilChanged } from 'rxjs/operators'
 

@@ -16,7 +16,7 @@ import {
   MosaicHttp,
   Message,
   NetworkType,
-} from "nem2-sdk"
+} from "symbol-sdk"
 import { of, forkJoin } from "rxjs"
 import { map, mergeMap } from "rxjs/operators"
 import { IAppConfig } from "../bootstrap"

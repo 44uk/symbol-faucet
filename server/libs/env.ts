@@ -1,4 +1,4 @@
-import { NetworkCurrencyLocal } from "nem2-sdk"
+import { NetworkCurrencyLocal } from "symbol-sdk"
 
 const {
   NEM_NETWORK,

@@ -2,7 +2,7 @@ import {
   Account,
   NetworkType,
   MosaicId
-} from 'nem2-sdk'
+} from 'symbol-sdk'
 
 import { env } from "./libs"
 

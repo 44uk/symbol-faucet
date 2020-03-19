@@ -2,7 +2,7 @@
 
 ## :heartbeat: Demo
 
-- [NEM2 Test Faucet](http://test-nem2-faucet.44uk.net/)
+- [symbol Test Faucet](http://test-symbol-faucet.44uk.net/)
 
 ## :handshake: Using with catapult-service-bootstrap
 
@@ -10,10 +10,10 @@
 
 ```console
 # build image
-$ docker build -t my-nem2-faucet .
+$ docker build -t my-symbol-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/nem2-faucet:fushicho3
+$ docker pull 44uk/symbol-faucet:fushicho3
 ```
 
 ### Add as service
@@ -22,8 +22,8 @@ $ docker pull 44uk/nem2-faucet:fushicho3
 
 ```yaml:docker-compose.yml
 faucet:
-  # image: my-nem2-faucet # in case of built image
-  image: 44uk/nem2-faucet:fushicho3
+  # image: my-symbol-faucet # in case of built image
+  image: 44uk/symbol-faucet:fushicho3
   stop_signal: SIGINT
   command: sh -c "/bin/sleep 15 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
@@ -45,7 +45,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:fushicho3
+  image: 44uk/symbol-faucet:fushicho3
   stop_signal: SIGINT
   environment:
     - NEM_API_URL=http://rest-gateway:3000
@@ -61,7 +61,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/nem2-faucet:fushicho3
+  image: 44uk/symbol-faucet:fushicho3
   stop_signal: SIGINT
   environment:
     - NEM_API_URL=http://rest-gateway:3000
@@ -83,7 +83,7 @@ If you want to use ReCaptcha, set both variables `RECAPTCHA_CLIENT_SECRET` and `
 
 ## :whale: Dockerimage
 
-- [44uk\/nem2-faucet | Docker Hub](https://hub.docker.com/r/44uk/nem2-faucet)
+- [44uk\/symbol-faucet | Docker Hub](https://hub.docker.com/r/44uk/symbol-faucet)
 
 ## :shell: Claimimg without Browser
 
@@ -129,6 +129,6 @@ $ npm run dev
 ## :muscle: Powered by
 
 - [NEM - Distributed Ledger Technology (Blockchain) Catapult](https://www.nem.io/catapult/)
-- [nemtech/nem2\-sdk\-typescript\-javascript: nem2\-sdk official for typescript & javascript](https://github.com/nemtech/nem2-sdk-typescript-javascript)
+- [nemtech/nem2\-sdk\-typescript\-javascript: nem2\-sdk official for typescript & javascript](https://github.com/nemtech/symbol-sdk-typescript-javascript)
 - [nuxt/nuxt\.js: The Vue\.js Framework](https://github.com/nuxt/nuxt.js)
-- [44uk/nem2\-faucet: Faucet application for nem2 \(catapult\)](https://github.com/44uk/nem2-faucet)
+- [44uk/nem2\-faucet: Faucet application for nem2 \(catapult\)](https://github.com/44uk/symbol-faucet)

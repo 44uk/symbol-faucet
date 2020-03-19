@@ -34,7 +34,7 @@ export const config: any = {
   /*
    ** Global CSS
    */
-  css: ['assets/stylesheets/overwrite.styl'],
+  css: ['assets/stylesheets/overwrite.styl', 'assets/stylesheets/symbol.styl'],
 
   /*
    ** Plugins to load before mounting the App
