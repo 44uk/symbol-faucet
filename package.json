@@ -28,7 +28,7 @@
     "@nuxtjs/dotenv": "^1.4.1",
     "@nuxtjs/recaptcha": "^0.6.2",
     "@types/lodash": "^4.14.149",
-    "@types/node": "^13.9.1",
+    "@types/node": "^13.9.2",
     "body-parser": "^1.19.0",
     "bufferutil": "^4.0.1",
     "cross-env": "^7.0.2",
@@ -37,7 +37,7 @@
     "js-joda": "^1.11.0",
     "lodash": "^4.17.15",
     "net": "^1.0.2",
-    "nuxt": "^2.11.0",
+    "nuxt": "^2.12.0",
     "nuxt-buefy": "^0.3.24",
     "pug": "^2.0.4",
     "pug-loader": "^2.4.0",
@@ -50,7 +50,7 @@
     "tls": "0.0.1",
     "tsconfig-paths": "^3.9.0",
     "utf-8-validate": "^5.0.2",
-    "vue-property-decorator": "^8.4.0",
+    "vue-property-decorator": "^8.4.1",
     "vuex-persistedstate": "^2.7.1"
   },
   "devDependencies": {
@@ -85,7 +85,7 @@
     "jest": "^25.1.0",
     "nodemon": "^2.0.2",
     "prettier": "1.19.1",
-    "ts-node": "^8.6.2",
+    "ts-node": "^8.7.0",
     "vue-jest": "^3.0.5"
   }
 }
