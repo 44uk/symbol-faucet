@@ -70,7 +70,7 @@ export const init = async () => {
       .toPromise()
       .catch(error => null)
     if (mosaicId == null) {
-      throw new Error('Failed to get MosaicID from API Node')
+      throw new Error(`Failed to get MosaicID(${env.MOSAIC_ID}) from API Node`)
     }
     console.info(`Get MosaicID from API Node: "${mosaicId.toHex()}"`)
   } else {
