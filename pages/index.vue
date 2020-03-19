@@ -73,7 +73,7 @@ div
 </template>
 
 <script>
-import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'nem2-sdk'
+import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'symbol-sdk'
 import { interval } from 'rxjs'
 import { filter, mergeMap, concatMap, distinctUntilChanged } from 'rxjs/operators'
 

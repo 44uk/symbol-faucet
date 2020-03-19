@@ -1,5 +1,5 @@
 import { map } from 'rxjs/operators'
-import { BlockHttp, UInt64 } from 'nem2-sdk'
+import { BlockHttp, UInt64 } from 'symbol-sdk'
 import { retryWithDelay } from '../libs/operators'
 
 export class BlockService {

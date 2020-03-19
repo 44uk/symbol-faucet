@@ -8,7 +8,7 @@ import {
   UInt64,
   TransferTransaction,
   NetworkType,
-} from 'nem2-sdk'
+} from 'symbol-sdk'
 import { of } from 'rxjs'
 import { map, mergeMap, filter, catchError, toArray } from 'rxjs/operators'
 

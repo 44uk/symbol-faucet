@@ -4,7 +4,7 @@
  */
 import {
   Deadline
-} from "nem2-sdk"
+} from "symbol-sdk"
 
 Deadline.timestampNemesisBlock = 1459468800
                                  // 1573426800

@@ -1,4 +1,4 @@
-import { NamespaceHttp, NamespaceId, MosaicId, NetworkType } from 'nem2-sdk'
+import { NamespaceHttp, NamespaceId, MosaicId, NetworkType } from 'symbol-sdk'
 import { retryWithDelay } from '../libs/operators'
 import { flatMap, filter, map } from 'rxjs/operators'
 

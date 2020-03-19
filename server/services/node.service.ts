@@ -1,5 +1,5 @@
 import { map } from 'rxjs/operators'
-import { NodeHttp, NetworkType } from 'nem2-sdk'
+import { NodeHttp, NetworkType } from 'symbol-sdk'
 import { retryWithDelay } from '../libs/operators'
 
 export class NodeService {

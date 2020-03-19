@@ -1,4 +1,4 @@
-import { Listener, Address } from 'nem2-sdk'
+import { Listener, Address } from 'symbol-sdk'
 
 interface IHook {
   onStatus?:      (info: any) => void

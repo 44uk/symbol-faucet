@@ -1,7 +1,7 @@
 import { catchError, map } from "rxjs/operators"
 import { IAppConfig } from "../bootstrap"
 import { AccountService } from "../services"
-import { NetworkType } from "nem2-sdk"
+import { NetworkType } from "symbol-sdk"
 
 export const handler = (conf: IAppConfig) => {
   const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
