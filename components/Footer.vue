@@ -9,5 +9,5 @@ footer.footer.symbolFooter
     p
       a(href="https://github.com/nuxt/nuxt.js", target="_blank" rel="noopener") The Vue.js Framework
     p
-      a(href="https://github.com/44uk/nem2-faucet", target="_blank" rel="noopener") Faucet application for symbol (catapult)
+      a(href="https://github.com/44uk/symbol-faucet", target="_blank" rel="noopener") Faucet application for symbol (catapult)
 </template>

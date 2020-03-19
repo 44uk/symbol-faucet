@@ -1,5 +1,5 @@
 {
-  "name": "nem2-faucet",
+  "name": "symbol-faucet",
   "description": "Faucet application for nem2",
   "keywords": [
     "nem",
@@ -7,8 +7,8 @@
     "catapult",
     "blockchain"
   ],
-  "website": "https://github.com/44uk/nem2-faucet/",
-  "repository": "https://github.com/44uk/nem2-faucet/tree/master",
+  "website": "https://github.com/44uk/symbol-faucet/",
+  "repository": "https://github.com/44uk/symbol-faucet/tree/master",
   "env": {
     "PORT": {
       "value": "80"
