@@ -47,7 +47,7 @@
     "rxjs": "^6.5.5",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
-    "symbol-sdk": "^0.17.4",
+    "symbol-sdk": "^0.18.0",
     "tls": "0.0.1",
     "tsconfig-paths": "^3.9.0",
     "utf-8-validate": "^5.0.2",
