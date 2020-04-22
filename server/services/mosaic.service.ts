@@ -1,6 +1,6 @@
 import { NamespaceHttp, NamespaceId, MosaicId, NetworkType } from 'symbol-sdk'
-import { retryWithDelay } from '../libs/operators'
 import { flatMap, filter, map } from 'rxjs/operators'
+import { retryWithDelay } from '../libs/operators'
 
 export class MosaicService {
   private apiUrl: string

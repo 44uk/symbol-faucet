@@ -4,18 +4,17 @@ import axios from "axios"
 import { ChronoUnit } from "js-joda"
 import {
   Account,
+  AccountInfo,
   Address,
   Mosaic,
+  Deadline,
   UInt64,
+  Message,
   EmptyMessage,
   PlainMessage,
-  TransferTransaction,
-  Deadline,
-  ChainHttp,
+  RepositoryFactoryHttp,
   TransactionHttp,
-  MosaicHttp,
-  Message,
-  NetworkType,
+  TransferTransaction,
 } from "symbol-sdk"
 import { of, forkJoin } from "rxjs"
 import { map, mergeMap } from "rxjs/operators"
@@ -29,13 +28,21 @@ _.mixin({
 })
 
 export const handler = (conf: IAppConfig) => {
-  const chainHttp = new ChainHttp(conf.API_URL)
-  const mosaicHttp = new MosaicHttp(conf.API_URL, conf.NETWORK_TYPE)
+  const repoFactory = new RepositoryFactoryHttp(conf.API_URL)
+  const chainRepo = repoFactory.createChainRepository()
+  const mosaicRepo = repoFactory.createMosaicRepository()
+
   const transactionHttp = new TransactionHttp(conf.API_URL)
   const accountService = new AccountService(conf.API_URL, conf.NETWORK_TYPE)
 
   return async (req: any, res: any, next: any) => {
-    const { recipient, amount, message, encryption, reCaptcha } = req.body
+    const {
+      recipient,
+      amount,
+      message,
+      encryption,
+      reCaptcha
+    } = req.body
     console.debug({ recipient, amount, message, encryption, reCaptcha })
 
     if (conf.RECAPTCHA_ENABLED) {
@@ -56,23 +63,23 @@ export const handler = (conf: IAppConfig) => {
     const recipientAccount = new Account(recipientAddress)
     console.debug(`Recipient => %s`, recipientAccount.address.pretty())
 
-    const currentHeight = await chainHttp.getBlockchainHeight().toPromise()
+    const currentHeight = await chainRepo.getBlockchainHeight().toPromise()
     console.debug(`Current Height => %s`, currentHeight)
 
     forkJoin([
       // fetch mosaic info
-      mosaicHttp.getMosaic(conf.MOSAIC_ID),
+      mosaicRepo.getMosaic(conf.MOSAIC_ID),
       // check recipient balance
       accountService.getAccountInfoWithMosaicAmountView(recipientAccount, conf.MOSAIC_ID)
         .pipe(
-          map(({ account, mosaicAmountView }) => {
+          map(({ accountInfo, mosaicAmountView }) => {
             if (
               mosaicAmountView &&
               mosaicAmountView.amount.compact() > conf.MAX_BALANCE
             ) {
               throw new Error(`Your account already has enough balance => (${mosaicAmountView.relativeAmount()})`)
             }
-            return account
+            return accountInfo
           })
         ),
       // check faucet balance
@@ -98,9 +105,7 @@ export const handler = (conf: IAppConfig) => {
         .pipe(
           map(txes => {
             if (txes.length > 0) {
-              throw new Error(
-                `Too many claiming. Please wait for ${conf.WAIT_BLOCK} blocks.`
-              )
+              throw new Error(`Too many claiming. Please wait for ${conf.WAIT_BLOCK} blocks.`)
             }
             return txes
           })
@@ -110,9 +115,7 @@ export const handler = (conf: IAppConfig) => {
         .pipe(
           map(txes => {
             if (txes.length >= conf.MAX_UNCONFIRMED) {
-              throw new Error(
-                `Too many unconfirmed claiming. Please wait ${txes.length} transactions confirmed.`
-              )
+              throw new Error(`Too many unconfirmed claiming. Please wait ${txes.length} transactions confirmed.`)
             }
             return txes
           })
@@ -151,15 +154,14 @@ export const handler = (conf: IAppConfig) => {
             5000000 // TODO: set network multipler
           ].find(_ => !!_) as number
           const transferTx = buildTransferTransaction(
-            recipientAccount.address,
+            recipientAddress,
             conf.MAX_DEADLINE,
             [mosaic],
             buildMessage(
               message,
               encryption,
               conf.FAUCET_ACCOUNT,
-              recipientAccount,
-              conf.NETWORK_TYPE
+              recipientAccount
             ),
             feeFactor,
             isMultipler
@@ -201,21 +203,17 @@ const buildMessage = (
   message = "",
   encryption = false,
   faucetAccount: Account,
-  publicAccount?: Account,
-  networkType?: NetworkType
+  recipientAccountInfo?: AccountInfo | null,
 ) => {
-// @ts-ignore WIP
-  if (encryption && (publicAccount === undefined || publicAccount.keyPair == null)) {
+  if (encryption && recipientAccountInfo === undefined) {
     throw new Error("Required recipient public key exposed to encrypt message.")
   }
-// @ts-ignore WIP
-  if (_.isBlank(message)) {
+  if (message === "") {
     console.debug("Empty message")
     return EmptyMessage
-  } else if (encryption && publicAccount && networkType) {
+  } else if (encryption && recipientAccountInfo) {
     console.debug("Encrypt message => %s", message)
-// @ts-ignore WIP
-    return faucetAccount.encryptMessage(message, publicAccount, networkType)
+    return faucetAccount.encryptMessage(message, recipientAccountInfo.publicAccount)
   } else {
     console.debug("Plain message => %s", message)
     return PlainMessage.create(message)

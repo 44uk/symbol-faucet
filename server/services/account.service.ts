@@ -1,51 +1,60 @@
 import {
   Account,
-  AccountHttp,
-  MosaicHttp,
   MosaicService,
   TransactionType,
   MosaicId,
   UInt64,
   TransferTransaction,
   NetworkType,
+  RepositoryFactoryHttp,
+  AccountRepository,
+  MosaicRepository,
 } from 'symbol-sdk'
 import { of } from 'rxjs'
-import { map, mergeMap, filter, catchError, toArray } from 'rxjs/operators'
+import { map, mergeMap, filter, catchError, toArray, tap } from 'rxjs/operators'
 
 export class AccountService {
   private apiUrl: string
   private networkType: NetworkType | undefined
 
-  private accountHttp: AccountHttp
-  private mosaicHttp: MosaicHttp
+  private accountRepo: AccountRepository
+  private mosaicRepo: MosaicRepository
 
   constructor(apiUrl: string, networkType?: NetworkType) {
     this.apiUrl = apiUrl
     this.networkType = networkType
 
-    this.accountHttp = new AccountHttp(this.apiUrl)
-    this.mosaicHttp = new MosaicHttp(this.apiUrl, this.networkType)
+    const repoFactory = new RepositoryFactoryHttp(apiUrl, networkType)
+    this.accountRepo = repoFactory.createAccountRepository()
+    this.mosaicRepo = repoFactory.createMosaicRepository()
   }
 
   getAccountInfoWithMosaicAmountView(account: Account, mosaicId: MosaicId) {
-    const mosaicService = new MosaicService(this.accountHttp, this.mosaicHttp)
-    return this.accountHttp.getAccountInfo(account.address).pipe(
-      mergeMap(_ => mosaicService.mosaicsAmountViewFromAddress(account.address)
-        .pipe(
-          mergeMap(_ => _),
-          filter(mosaicAmountView => mosaicAmountView.mosaicInfo.id.equals(mosaicId)),
-          map(mosaicAmountView => ({ account, mosaicAmountView }))
-        )
-      ),
-      catchError(error => {
-        console.error({ error })
-        return of({ account, mosaicAmountView: null })
-      })
-    )
+    const mosaicService = new MosaicService(this.accountRepo, this.mosaicRepo)
+    return this.accountRepo
+      .getAccountInfo(account.address)
+      .pipe(
+        mergeMap(accountInfo => mosaicService.mosaicsAmountViewFromAddress(accountInfo.address)
+          .pipe(
+            mergeMap(_ => _),
+            tap(() => {
+              console.log({
+                account, accountInfo
+              })
+            }),
+            filter(mosaicAmountView => mosaicAmountView.mosaicInfo.id.equals(mosaicId)),
+            map(mosaicAmountView => ({ account, accountInfo, mosaicAmountView }))
+          )
+        ),
+        catchError(error => {
+          console.error({ error })
+          return of({ account, accountInfo: null, mosaicAmountView: null })
+        })
+      )
   }
 
   getTransferOutgoings(accountFrom: Account, recipient: Account, height: UInt64, wait = 10) {
-    return this.accountHttp
+    return this.accountRepo
       .getAccountOutgoingTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
@@ -63,7 +72,7 @@ export class AccountService {
   }
 
   getTransferUnconfirmed(accountFrom: Account, recipient: Account) {
-    return this.accountHttp
+    return this.accountRepo
       .getAccountUnconfirmedTransactions(accountFrom.address)
       .pipe(
         mergeMap(_ => _),
