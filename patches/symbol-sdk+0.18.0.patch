@@ -1,0 +1,40 @@
+diff --git a/node_modules/symbol-sdk/dist/src/model/account/Account.d.ts b/node_modules/symbol-sdk/dist/src/model/account/Account.d.ts
+index a681e36..ee43e12 100644
+--- a/node_modules/symbol-sdk/dist/src/model/account/Account.d.ts
++++ b/node_modules/symbol-sdk/dist/src/model/account/Account.d.ts
+@@ -36,7 +36,6 @@ export declare class Account {
+      * Create a new encrypted Message
+      * @param message - Plain message to be encrypted
+      * @param recipientPublicAccount - Recipient public account
+-     * @param networkType - Network type
+      * @returns {EncryptedMessage}
+      */
+     encryptMessage(message: string, recipientPublicAccount: PublicAccount): EncryptedMessage;
+@@ -44,7 +43,6 @@ export declare class Account {
+      * Decrypts an encrypted message
+      * @param encryptedMessage - Encrypted message
+      * @param publicAccount - The public account originally encrypted the message
+-     * @param networkType - Network type
+      * @returns {PlainMessage}
+      */
+     decryptMessage(encryptedMessage: EncryptedMessage, publicAccount: PublicAccount): PlainMessage;
+diff --git a/node_modules/symbol-sdk/dist/src/model/account/Account.js b/node_modules/symbol-sdk/dist/src/model/account/Account.js
+index d39a10f..8187656 100644
+--- a/node_modules/symbol-sdk/dist/src/model/account/Account.js
++++ b/node_modules/symbol-sdk/dist/src/model/account/Account.js
+@@ -71,7 +71,6 @@ class Account {
+      * Create a new encrypted Message
+      * @param message - Plain message to be encrypted
+      * @param recipientPublicAccount - Recipient public account
+-     * @param networkType - Network type
+      * @returns {EncryptedMessage}
+      */
+     encryptMessage(message, recipientPublicAccount) {
+@@ -81,7 +80,6 @@ class Account {
+      * Decrypts an encrypted message
+      * @param encryptedMessage - Encrypted message
+      * @param publicAccount - The public account originally encrypted the message
+-     * @param networkType - Network type
+      * @returns {PlainMessage}
+      */
+     decryptMessage(encryptedMessage, publicAccount) {
