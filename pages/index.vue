@@ -84,7 +84,7 @@ export default {
   name: 'Home',
   components: {
     Readme,
-    History
+    History,
   },
   asyncData({ res, store, error }) {
     if (res.error) return error(res.error)
@@ -99,8 +99,8 @@ export default {
       formAttribute: {
         recipientPattern,
         recipientPlaceholder,
-        amountPlaceholder
-      }
+        amountPlaceholder,
+      },
     }
     console.debug('asyncData: %o', data)
     return data
@@ -110,7 +110,7 @@ export default {
       app: {
         waiting: false,
         listener: null,
-        poller: null
+        poller: null,
       },
       faucet: {
         drained: false,
@@ -124,15 +124,15 @@ export default {
         outOpt: null,
         step: null,
         address: null,
-        balance: null
+        balance: null,
       },
       form: {
         recipient: null,
         message: null,
         amount: null,
-        encryption: false
+        encryption: false,
       },
-      txHashes: []
+      txHashes: [],
     }
   },
   created() {
@@ -143,7 +143,7 @@ export default {
         recipient,
         amount,
         message,
-        encryption: encryption && encryption.toLowerCase() === 'true'
+        encryption: encryption && encryption.toLowerCase() === 'true',
       }
     }
   },
@@ -151,16 +151,16 @@ export default {
     const faucetAddress = Address.createFromRawAddress(this.faucet.address)
     this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     this.app.listener.open().then(() => {
-      this.app.listener.unconfirmedAdded(faucetAddress).subscribe(_ => {
+      this.app.listener.unconfirmedAdded(faucetAddress).subscribe(() => {
         this.info('Your request had been unconfirmed status!')
       })
-      this.app.listener.confirmed(faucetAddress).subscribe(_ => {
+      this.app.listener.confirmed(faucetAddress).subscribe(() => {
         this.info('Your Request had been confirmed status!')
       })
     })
 
     this.app.poller = this.accountPolling(faucetAddress)
-    this.app.poller.subscribe(mosaicAmountView => (this.faucet.balance = mosaicAmountView.relativeAmount()))
+    this.app.poller.subscribe((mosaicAmountView) => (this.faucet.balance = mosaicAmountView.relativeAmount()))
 
     if (this.$recaptcha) {
       await this.$recaptcha.init()
@@ -191,13 +191,13 @@ export default {
       }
       this.$axios
         .$post('/claims', formData)
-        .then(resp => {
+        .then((resp) => {
           this.txHashes.unshift(resp.txHash)
           this.info(`Send your declaration.`)
           this.success(`Amount: ${resp.amount} ${this.faucet.mosaicId}`)
           this.success(`Transaction Hash: ${resp.txHash}`)
         })
-        .catch(err => {
+        .catch((err) => {
           const msg = (err.response.data && err.response.data.error) || err.response.statusTest
           this.failed(`Message from server: ${msg}`)
           this.app.waiting = false
@@ -210,7 +210,7 @@ export default {
       this.$buefy.snackbar.open({
         type: 'is-info',
         message,
-        queue: false
+        queue: false,
       })
     },
     success(message) {
@@ -218,7 +218,7 @@ export default {
         type: 'is-success',
         message,
         queue: false,
-        duration: 8000
+        duration: 8000,
       })
     },
     warning(message) {
@@ -226,7 +226,7 @@ export default {
         type: 'is-warning',
         message,
         queue: false,
-        duration: 8000
+        duration: 8000,
       })
     },
     failed(message) {
@@ -234,9 +234,9 @@ export default {
         type: 'is-danger',
         message,
         queue: false,
-        duration: 8000
+        duration: 8000,
       })
-    }
-  }
+    },
+  },
 }
 </script>
