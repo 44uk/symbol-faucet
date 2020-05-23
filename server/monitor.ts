@@ -1,4 +1,4 @@
-import { Listener, Address } from 'symbol-sdk'
+import { RepositoryFactoryHttp, Address } from 'symbol-sdk'
 
 interface IHook {
   onStatus?:      (info: any) => void
@@ -12,7 +12,8 @@ export const Monitor = (url: string, address: Address, hooks: IHook = {}) => {
     console.log('[%s]\n%s\n', label, JSON.stringify(info))
   }
   const errorObserver = (err: any) => console.error(err)
-  const listener = new Listener(url)
+  const factory = new RepositoryFactoryHttp(url)
+  const listener = factory.createListener()
   listener.open().then(() => {
     listener
       .status(address)

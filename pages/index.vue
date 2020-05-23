@@ -73,7 +73,7 @@ div
 </template>
 
 <script>
-import { Address, AccountHttp, MosaicHttp, MosaicService, Listener } from 'symbol-sdk'
+import { Address, AccountHttp, MosaicHttp, MosaicService, RepositoryFactoryHttp } from 'symbol-sdk'
 import { interval } from 'rxjs'
 import { filter, mergeMap, concatMap, distinctUntilChanged } from 'rxjs/operators'
 
@@ -145,11 +145,13 @@ export default {
         message,
         encryption: encryption && encryption.toLowerCase() === 'true',
       }
+      const factory = new RepositoryFactoryHttp(this.faucet.publicUrl)
+      this.app.listener = factory.createListener()
     }
   },
   async mounted() {
+    // this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     const faucetAddress = Address.createFromRawAddress(this.faucet.address)
-    this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     this.app.listener.open().then(() => {
       this.app.listener.unconfirmedAdded(faucetAddress).subscribe(() => {
         this.info('Your request had been unconfirmed status!')
