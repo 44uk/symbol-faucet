@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Layout from '../components/Layout'
+import { Button } from 'evergreen-ui'
 
 const IndexPage = () => (
   <Layout title="Home | Next.js + TypeScript Example">
@@ -8,6 +9,9 @@ const IndexPage = () => (
       <Link href="/about">
         <a>About</a>
       </Link>
+    </p>
+    <p>
+      <Button>I am using 🌲 Evergreen!</Button>
     </p>
   </Layout>
 )
