@@ -13,7 +13,7 @@
 $ docker build -t my-symbol-faucet .
 
 # or pull from dockerhub
-$ docker pull 44uk/symbol-faucet:fushicho3
+$ docker pull 44uk/symbol-faucet:gorilla
 ```
 
 ### Add as service
@@ -23,7 +23,7 @@ $ docker pull 44uk/symbol-faucet:fushicho3
 ```yaml:docker-compose.yml
 faucet:
   # image: my-symbol-faucet # in case of built image
-  image: 44uk/symbol-faucet:fushicho3
+  image: 44uk/symbol-faucet:gorilla
   stop_signal: SIGINT
   command: sh -c "/bin/sleep 15 && /bin/sh /app/bin/create-env.sh && /usr/local/bin/npm start"
   environment:
@@ -45,7 +45,7 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/symbol-faucet:fushicho3
+  image: 44uk/symbol-faucet:gorilla
   stop_signal: SIGINT
   environment:
     - NEM_API_URL=http://rest-gateway:3000
@@ -61,12 +61,12 @@ faucet:
 
 ```yaml:docker-compose.yml
 faucet:
-  image: 44uk/symbol-faucet:fushicho3
+  image: 44uk/symbol-faucet:gorilla
   stop_signal: SIGINT
   environment:
     - NEM_API_URL=http://rest-gateway:3000
     - NEM_PUBLIC_URL=http://localhost:3000
-    - NEM_MOSAIC_FQN=3E70742C9A38ACAB
+    - NEM_MOSAIC_FQN=symbol.xym
   ports:
     - '4000:4000'
   depends_on:
@@ -101,7 +101,7 @@ curl http://localhost:4000/claims -d 'recipient=__YOUR_ADDRESS__'
 # * NEM_PUBLIC_URL
 # * NEM_NETWORK
 # * NEM_GENERATION_HASH
-# * NEM_MOSAIC_FQN (default: cat:currency)
+# * NEM_MOSAIC_FQN (default: symbol.xym)
 # * NEM_MOSAIC_HEX (for not linked mosaic)
 # * NEM_OUT_MIN
 # * NEM_OUT_MAX
@@ -128,7 +128,7 @@ $ npm run dev
 
 ## :muscle: Powered by
 
-- [NEM - Distributed Ledger Technology (Blockchain) Catapult](https://www.nem.io/catapult/)
-- [nemtech/nem2\-sdk\-typescript\-javascript: nem2\-sdk official for typescript & javascript](https://github.com/nemtech/symbol-sdk-typescript-javascript)
+- [Symbol From NEM - Powering Possibility](https://symbolplatform.com/)
+- [nemtech/symbol\-sdk\-typescript\-javascript: Symbol SDK for TypeScript & JavaScript](https://github.com/nemtech/symbol-sdk-typescript-javascript)
 - [nuxt/nuxt\.js: The Vue\.js Framework](https://github.com/nuxt/nuxt.js)
-- [44uk/nem2\-faucet: Faucet application for nem2 \(catapult\)](https://github.com/44uk/symbol-faucet)
+- [44uk/symbol\-faucet: Faucet application for symbol development](https://github.com/44uk/symbol-faucet)

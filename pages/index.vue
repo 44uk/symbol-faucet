@@ -145,12 +145,14 @@ export default {
         message,
         encryption: encryption && encryption.toLowerCase() === 'true',
       }
-      const factory = new RepositoryFactoryHttp(this.faucet.publicUrl)
+      const factory = new RepositoryFactoryHttp(this.faucet.publicUrl, {
+        websocketUrl: this.faucet.publicUrl.replace('http', 'ws'),
+        websocketInjected: WebSocket,
+      })
       this.app.listener = factory.createListener()
     }
   },
   async mounted() {
-    // this.app.listener = new Listener(this.faucet.publicUrl.replace('http', 'ws'), WebSocket)
     const faucetAddress = Address.createFromRawAddress(this.faucet.address)
     this.app.listener.open().then(() => {
       this.app.listener.unconfirmedAdded(faucetAddress).subscribe(() => {

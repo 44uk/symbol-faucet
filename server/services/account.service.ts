@@ -9,14 +9,17 @@ import {
   RepositoryFactoryHttp,
   AccountRepository,
   MosaicRepository,
+  TransactionRepository,
+  TransactionGroup,
 } from 'symbol-sdk'
 import { of } from 'rxjs'
-import { map, mergeMap, filter, catchError, toArray, tap } from 'rxjs/operators'
+import { map, mergeMap, filter, catchError, tap } from 'rxjs/operators'
 
 export class AccountService {
   private apiUrl: string
   private networkType: NetworkType | undefined
 
+  private transactionRepo: TransactionRepository
   private accountRepo: AccountRepository
   private mosaicRepo: MosaicRepository
 
@@ -24,7 +27,8 @@ export class AccountService {
     this.apiUrl = apiUrl
     this.networkType = networkType
 
-    const repoFactory = new RepositoryFactoryHttp(apiUrl, networkType)
+    const repoFactory = new RepositoryFactoryHttp(this.apiUrl, { networkType: this.networkType })
+    this.transactionRepo = repoFactory.createTransactionRepository()
     this.accountRepo = repoFactory.createAccountRepository()
     this.mosaicRepo = repoFactory.createMosaicRepository()
   }
@@ -37,11 +41,7 @@ export class AccountService {
         mergeMap(accountInfo => mosaicService.mosaicsAmountViewFromAddress(accountInfo.address)
           .pipe(
             mergeMap(_ => _),
-            tap(() => {
-              console.log({
-                account, accountInfo
-              })
-            }),
+            tap(() => console.log({ account, accountInfo })),
             filter(mosaicAmountView => mosaicAmountView.mosaicInfo.id.equals(mosaicId)),
             map(mosaicAmountView => ({ account, accountInfo, mosaicAmountView }))
           )
@@ -54,37 +54,45 @@ export class AccountService {
   }
 
   getTransferOutgoings(accountFrom: Account, recipient: Account, height: UInt64, wait = 10) {
-    return this.accountRepo
-      .getAccountOutgoingTransactions(accountFrom.address)
+    console.debug(height.compact())
+    const observable$ = this.transactionRepo
+      .search({
+        group: TransactionGroup.Confirmed,
+        signerPublicKey: accountFrom.publicKey,
+        recipientAddress: recipient.address,
+        type: [TransactionType.TRANSFER]
+      })
       .pipe(
-        mergeMap(_ => _),
-        filter(tx => tx.type === TransactionType.TRANSFER),
-        map(_ => _ as TransferTransaction),
-        filter(tx => tx.recipientAddress.equals(recipient.address)),
-// @ts-ignore WIP
-        filter(tx => tx.transactionInfo.height.compact() > height.compact() - wait),
-        toArray(),
+        map(page => page.data as TransferTransaction[]),
+        map(txes => txes
+            .filter(tx => tx.transactionInfo)
+            .filter(tx => tx.transactionInfo!.height.compare(height.subtract(UInt64.fromUint(wait))) === 1)
+        ),
+        tap(txes => console.debug(txes)),
         catchError(error => {
           console.error({ error })
-          return of([])
+          return of([] as TransferTransaction[])
         })
       )
+    return observable$
   }
 
   getTransferUnconfirmed(accountFrom: Account, recipient: Account) {
-    return this.accountRepo
-      .getAccountUnconfirmedTransactions(accountFrom.address)
+    const observable$ = this.transactionRepo
+      .search({
+        group: TransactionGroup.Unconfirmed,
+        signerPublicKey: accountFrom.publicKey,
+        recipientAddress: recipient.address,
+        type: [TransactionType.TRANSFER]
+      })
       .pipe(
-        mergeMap(_ => _),
-        filter(tx => tx.type === TransactionType.TRANSFER),
-        map(_ => _ as TransferTransaction),
-        filter(tx => tx.recipientAddress.equals(recipient.address)),
-        toArray(),
+        map(page => page.data as TransferTransaction[]),
         catchError(error => {
           console.error({ error })
-          return of([])
+          return of([] as TransferTransaction[])
         })
       )
+    return observable$
   }
 }
 
